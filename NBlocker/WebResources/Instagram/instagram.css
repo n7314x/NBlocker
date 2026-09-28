@@ -1,0 +1,3 @@
+html.nblocker-grayscale { filter: grayscale(1) !important; }
+html.nblocker-media-grayscale img,
+html.nblocker-media-grayscale video { filter: grayscale(1) !important; }

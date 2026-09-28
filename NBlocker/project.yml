@@ -1,0 +1,190 @@
+name: NBlocker
+
+options:
+  bundleIdPrefix: app.nblocker
+  deploymentTarget:
+    iOS: "26.0"
+  developmentLanguage: en
+  indentWidth: 2
+  tabWidth: 2
+  usesTabs: false
+  createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Release: release
+
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+
+fileGroups:
+  - docs
+  - Reference
+  - scripts
+  - Config
+  - Entitlements
+
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+    SWIFT_VERSION: "6.0"
+    CLANG_ENABLE_MODULES: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  NBlocker:
+    type: application
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: NBlocker
+      - path: Shared
+      - path: Resources/Assets.xcassets
+        buildPhase: resources
+      - path: Resources/Localizations
+        buildPhase: resources
+      - path: Resources/Sounds
+        buildPhase: resources
+      - path: WebResources
+        type: folder
+        buildPhase: resources
+    info:
+      path: Resources/Info/NBlocker-Info.plist
+    entitlements:
+      path: Entitlements/NBlocker.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.NBlocker
+        PRODUCT_NAME: NBlocker
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+
+  NBlockerTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Tests/NBlockerTests
+    dependencies:
+      - target: NBlocker
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.NBlockerTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/NBlocker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NBlocker"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+  NBlockerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Tests/NBlockerUITests
+    dependencies:
+      - target: NBlocker
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.NBlockerUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: NBlocker
+
+  NBlockerWidgets:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Extensions/NBlockerWidgets
+      - path: Shared
+    info:
+      path: Resources/Info/NBlockerWidgets-Info.plist
+    entitlements:
+      path: Entitlements/NBlockerWidgets.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.NBlockerWidgets
+        PRODUCT_NAME: NBlockerWidgets
+        SKIP_INSTALL: YES
+
+  DeviceActivityMonitor:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Extensions/DeviceActivityMonitor
+      - path: Shared
+    info:
+      path: Resources/Info/DeviceActivityMonitor-Info.plist
+    entitlements:
+      path: Entitlements/DeviceActivityMonitor.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.DeviceActivityMonitor
+        PRODUCT_NAME: DeviceActivityMonitor
+        SKIP_INSTALL: YES
+
+  ShieldConfiguration:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Extensions/ShieldConfiguration
+      - path: Shared
+    info:
+      path: Resources/Info/ShieldConfiguration-Info.plist
+    entitlements:
+      path: Entitlements/ShieldConfiguration.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.ShieldConfiguration
+        PRODUCT_NAME: ShieldConfiguration
+        SKIP_INSTALL: YES
+
+  ShieldAction:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Extensions/ShieldAction
+      - path: Shared
+    info:
+      path: Resources/Info/ShieldAction-Info.plist
+    entitlements:
+      path: Entitlements/ShieldAction.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.nblocker.ShieldAction
+        PRODUCT_NAME: ShieldAction
+        SKIP_INSTALL: YES
+
+schemes:
+  NBlocker:
+    build:
+      targets:
+        NBlocker: all
+        NBlockerTests: [test]
+        NBlockerUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - name: NBlockerTests
+          parallelizable: true
+        - name: NBlockerUITests
+          parallelizable: false
+    archive:
+      config: Release
+
+  NBlockerPrivilegedExtensions:
+    build:
+      targets:
+        NBlockerWidgets: all
+        DeviceActivityMonitor: all
+        ShieldConfiguration: all
+        ShieldAction: all
+    run:
+      config: Debug

@@ -1,0 +1,16 @@
+# Instagram routes
+
+| Route | Classification | Initial policy |
+| --- | --- | --- |
+| `/` | home | allow |
+| `/direct` and descendants | messages | allow |
+| `/reel/{id}` or `/reels/{id}` | reel | allow or block by setting |
+| `/reels/` | reel feed | allow or block by setting |
+| `/explore` and descendants | explore | allow; DOM entry may be hidden |
+| `/accounts/*` | accounts | allow |
+| other same-host paths | profile/content | allow |
+
+Only `instagram.com` and its `www` host are treated as platform routes. HTTP is
+upgraded to HTTPS. HTTPS Facebook authentication hosts are allowed for Instagram's
+site-owned login flow. Other top-level hosts require an explicit external-open action
+rather than inheriting the authenticated platform context.

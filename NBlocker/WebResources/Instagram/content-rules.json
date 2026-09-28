@@ -1,0 +1,6 @@
+[
+  {
+    "trigger": {"url-filter": "^https://(www\\.)?instagram\\.com/.*"},
+    "action": {"type": "ignore-previous-rules"}
+  }
+]

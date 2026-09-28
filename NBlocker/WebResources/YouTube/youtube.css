@@ -1,0 +1,3 @@
+html.nblocker-grayscale { filter: grayscale(1) !important; }
+html.nblocker-hide-thumbnails img,
+html.nblocker-hide-thumbnails ytm-thumbnail-overlay-time-status-renderer { visibility: hidden !important; }

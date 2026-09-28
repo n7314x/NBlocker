@@ -1,0 +1,14 @@
+[data-nblocker-hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.nblocker-reduce-motion *,
+  html.nblocker-reduce-motion *::before,
+  html.nblocker-reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,120 @@
+import XCTest
+@testable import NBlocker
+
+final class RuleEngineTests: XCTestCase {
+    func testInstagramRuleSelection() {
+        var settings = PlatformSettings.default
+        settings.instagram.hideExplore = false
+        settings.instagram.hideSuggestedPosts = false
+        settings.instagram.hideSponsoredPosts = false
+        settings.instagram.hideRecommendedAccounts = false
+        let ids = Set(RuleEngine().enabledRules(for: .instagram, settings: settings).map(\.id))
+        XCTAssertTrue(ids.contains("instagram.reels.entries"))
+        XCTAssertFalse(ids.contains("instagram.explore.entries"))
+        XCTAssertFalse(ids.contains("instagram.feed.suggestions"))
+    }
+
+    func testYouTubeRuleSelection() {
+        var settings = PlatformSettings.default
+        settings.youtube.disableAutoplay = false
+        let ids = Set(RuleEngine().enabledRules(for: .youtube, settings: settings).map(\.id))
+        XCTAssertTrue(ids.contains("youtube.shorts.entries"))
+        XCTAssertFalse(ids.contains("youtube.playback.autoplay"))
+    }
+
+    func testMasterSwitchLeavesOnlySharedInfrastructure() {
+        var settings = PlatformSettings.default
+        settings.instagram.filteringEnabled = false
+        settings.youtube.filteringEnabled = false
+
+        for platform in Platform.allCases {
+            let rules = RuleEngine().enabledRules(for: platform, settings: settings)
+            XCTAssertTrue(rules.allSatisfy { $0.platform == nil })
+        }
+    }
+
+    func testDefaultRuleResourcesLoadFromApplicationBundle() throws {
+        let engine = RuleEngine(bundle: .main)
+        for platform in Platform.allCases {
+            for rule in engine.enabledRules(for: platform, settings: .default) {
+                let source = try engine.source(for: rule)
+                XCTAssertFalse(source.isEmpty, "Empty resource for \(rule.id)")
+            }
+        }
+    }
+
+    func testRouteClassificationAndBlocking() throws {
+        let reel = try XCTUnwrap(URL(string: "https://www.instagram.com/reel/abc/"))
+        XCTAssertEqual(URLHelpers.classify(reel), .instagramReel(identifier: "abc"))
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: reel, settings: .default),
+            .block(reason: "Reels are blocked by your Instagram settings")
+        )
+
+        let short = try XCTUnwrap(URL(string: "https://m.youtube.com/shorts/xyz"))
+        XCTAssertEqual(URLHelpers.classify(short), .youtubeShort(identifier: "xyz"))
+    }
+
+    func testExternalAndUnsupportedURLs() throws {
+        let external = try XCTUnwrap(URL(string: "https://example.com/path"))
+        XCTAssertEqual(URLHelpers.classify(external), .external)
+        let unsupported = try XCTUnwrap(URL(string: "mailto:test@example.com"))
+        XCTAssertEqual(URLHelpers.classify(unsupported), .unsupported)
+    }
+
+    func testMasterFilterSwitchAllowsReelAndShortRoutes() throws {
+        let reel = try XCTUnwrap(URL(string: "https://www.instagram.com/reel/abc/"))
+        let short = try XCTUnwrap(URL(string: "https://m.youtube.com/shorts/xyz"))
+        var settings = PlatformSettings.default
+        settings.instagram.filteringEnabled = false
+        settings.youtube.filteringEnabled = false
+
+        XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: reel, settings: settings), .allow)
+        XCTAssertEqual(NavigationGuard(platform: .youtube).disposition(for: short, settings: settings), .allow)
+    }
+
+    func testHTTPPlatformRouteRedirectsToHTTPS() throws {
+        let url = try XCTUnwrap(URL(string: "http://www.instagram.com/direct/inbox/"))
+        let secureURL = try XCTUnwrap(URL(string: "https://www.instagram.com/direct/inbox/"))
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: url, settings: .default),
+            .redirect(secureURL)
+        )
+    }
+
+    func testTrustedAuthenticationHostsRemainInsideWebView() throws {
+        let google = try XCTUnwrap(URL(string: "https://accounts.google.com/signin"))
+        let facebook = try XCTUnwrap(URL(string: "https://www.facebook.com/login"))
+        XCTAssertEqual(NavigationGuard(platform: .youtube).disposition(for: google, settings: .default), .allow)
+        XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: facebook, settings: .default), .allow)
+        XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: google, settings: .default), .requestExternalOpen)
+    }
+
+    func testYouTubeSearchCanBeDisabledIndependently() throws {
+        let search = try XCTUnwrap(URL(string: "https://m.youtube.com/results?search_query=swift"))
+        var settings = PlatformSettings.default
+        settings.youtube.allowSearch = false
+
+        XCTAssertEqual(
+            NavigationGuard(platform: .youtube).disposition(for: search, settings: settings),
+            .block(reason: "Search is blocked by your YouTube settings")
+        )
+    }
+
+    func testBridgeAllowsKnownRuleIDsAndRejectsArbitraryLogContent() {
+        XCTAssertEqual(
+            WebMessageHandler.event(from: ["event": "ruleError", "rule": "instagram.reels.entries"]),
+            .ruleError(identifier: "instagram.reels.entries")
+        )
+        XCTAssertEqual(
+            WebMessageHandler.event(from: ["event": "ruleError", "rule": "private page text"]),
+            .ruleError(identifier: "unknown")
+        )
+        XCTAssertEqual(
+            WebMessageHandler.event(from: ["event": "navigationPrevented", "route": "short"]),
+            .navigationPrevented(route: .short)
+        )
+        XCTAssertNil(WebMessageHandler.event(from: ["event": "navigationPrevented", "route": "unknown"]))
+        XCTAssertNil(WebMessageHandler.event(from: ["event": "scroll", "direction": "sideways"]))
+    }
+}

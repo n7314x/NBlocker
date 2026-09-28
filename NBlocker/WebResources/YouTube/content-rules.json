@@ -1,0 +1,6 @@
+[
+  {
+    "trigger": {"url-filter": "^https://(m\\.|www\\.)?youtube\\.com/.*"},
+    "action": {"type": "ignore-previous-rules"}
+  }
+]
