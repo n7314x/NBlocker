@@ -11,16 +11,18 @@ struct NBPlatformCarousel: View {
                 Button {
                     open(platform)
                 } label: {
-                    VStack(spacing: NBSpacing.standard) {
-                        NBPlatformIcon(platform: platform, size: 96)
+                    VStack(spacing: NBSpacing.small) {
+                        NBPlatformIcon(platform: platform, size: 66)
+
                         Text(platform.displayName)
-                            .font(.title3.weight(.semibold))
+                            .font(.headline)
                             .foregroundStyle(.white)
+
                         Text("Open intentionally")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundStyle(NBColor.secondaryText)
                     }
-                    .scaleEffect(selection == platform && !reduceMotion ? 1 : 0.92)
+                    .scaleEffect(selection == platform && !reduceMotion ? 1 : 0.95)
                     .animation(NBAnimation.interactive, value: selection)
                     .frame(maxWidth: .infinity)
                 }
@@ -30,7 +32,9 @@ struct NBPlatformCarousel: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
-        .frame(height: 230)
-        .onChange(of: selection) { _, _ in HapticManager.play(.selection) }
+        .frame(height: 155)
+        .onChange(of: selection) { _, _ in
+            HapticManager.play(.selection)
+        }
     }
 }

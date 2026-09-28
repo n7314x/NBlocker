@@ -11,6 +11,13 @@ enum RootTab: String, CaseIterable, Identifiable, Hashable, Sendable {
 
     var title: String { rawValue.capitalized }
 
+    var compactTitle: String {
+        switch self {
+        case .protection: "Protect"
+        default: title
+        }
+    }
+
     var symbolName: String {
         switch self {
         case .sleep: "moon.zzz"

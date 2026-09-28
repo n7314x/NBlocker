@@ -5,21 +5,18 @@ struct SleepView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: NBSpacing.large) {
-                Text("Quiet routines without remote tracking.")
-                    .font(.footnote)
-                    .foregroundStyle(NBColor.secondaryText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: NBSpacing.medium) {
+                NBSectionHeader(title: "Sleep", subtitle: "Quiet routines without remote tracking")
 
                 ZStack {
                     Circle()
                         .fill(Color.indigo.opacity(0.12))
-                        .frame(width: 170, height: 170)
+                        .frame(width: 118, height: 118)
 
                     Image(systemName: "moon.zzz.fill")
-                        .font(.system(size: 68))
+                        .font(.system(size: 48))
                         .foregroundStyle(Color.indigo.opacity(0.9))
-                        .shadow(color: .indigo.opacity(0.32), radius: 26)
+                        .shadow(color: .indigo.opacity(0.28), radius: 18)
                 }
                 .frame(maxWidth: .infinity)
 
@@ -43,17 +40,16 @@ struct SleepView: View {
                         "Sleep scheduling uses on-device routine times. System app blocking needs provisioned Screen Time capabilities.",
                         systemImage: "info.circle"
                     )
-                    .font(.footnote)
+                    .font(.caption2)
                     .foregroundStyle(NBColor.secondaryText)
                 }
             }
             .padding(.horizontal, NBSpacing.standard)
-            .padding(.top, NBSpacing.medium)
-            .padding(.bottom, NBSpacing.large)
+            .padding(.top, NBSpacing.small)
+            .padding(.bottom, NBSpacing.medium)
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("Sleep")
-        .toolbarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("screen.sleep")
     }
 }

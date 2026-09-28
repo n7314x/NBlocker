@@ -14,7 +14,7 @@ struct NBCard<Content: View>: View {
             .background(NBColor.card, in: RoundedRectangle(cornerRadius: NBRadius.card, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: NBRadius.card, style: .continuous)
-                    .stroke(NBColor.border, lineWidth: 1)
+                    .stroke(NBColor.border, lineWidth: 0.8)
             }
     }
 }

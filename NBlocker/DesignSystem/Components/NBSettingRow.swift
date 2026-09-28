@@ -21,20 +21,24 @@ struct NBSettingRow<Trailing: View>: View {
     var body: some View {
         HStack(spacing: NBSpacing.medium) {
             Image(systemName: symbol)
-                .frame(width: 26)
+                .font(.subheadline)
+                .frame(width: 22)
                 .foregroundStyle(.tint)
-            VStack(alignment: .leading, spacing: 2) {
+
+            VStack(alignment: .leading, spacing: 1) {
                 Text(title)
+                    .font(.subheadline)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundStyle(NBColor.secondaryText)
                 }
             }
+
             Spacer(minLength: NBSpacing.small)
             trailing
         }
-        .frame(minHeight: 44)
+        .frame(minHeight: 38)
         .contentShape(Rectangle())
     }
 }
@@ -42,7 +46,7 @@ struct NBSettingRow<Trailing: View>: View {
 struct NBDisclosureIndicator: View {
     var body: some View {
         Image(systemName: "chevron.right")
-            .font(.caption.weight(.semibold))
+            .font(.caption2.weight(.semibold))
             .foregroundStyle(NBColor.quietText)
     }
 }

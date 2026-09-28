@@ -8,11 +8,11 @@ struct ActivityView: View {
         let days = environment.usage.lastSevenDays()
 
         ScrollView {
-            VStack(spacing: NBSpacing.large) {
-                Text("Only time spent inside NBlocker is counted.")
-                    .font(.footnote)
-                    .foregroundStyle(NBColor.secondaryText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: NBSpacing.medium) {
+                NBSectionHeader(
+                    title: "Activity",
+                    subtitle: "Only time spent inside NBlocker is counted"
+                )
 
                 NBUsageRing(
                     progress: min(total.duration / 3_600, 1),
@@ -20,6 +20,7 @@ struct ActivityView: View {
                     label: "today"
                 )
                 .frame(maxWidth: .infinity)
+                .scaleEffect(0.86)
 
                 NBCard {
                     NBSectionHeader(title: "Last seven days", subtitle: "Local app-contained sessions")
@@ -39,12 +40,11 @@ struct ActivityView: View {
                 }
             }
             .padding(.horizontal, NBSpacing.standard)
-            .padding(.top, NBSpacing.medium)
-            .padding(.bottom, NBSpacing.large)
+            .padding(.top, NBSpacing.small)
+            .padding(.bottom, NBSpacing.medium)
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("Activity")
-        .toolbarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("screen.activity")
     }
 }

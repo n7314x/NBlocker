@@ -5,22 +5,24 @@ struct ProfileView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: NBSpacing.large) {
-                VStack(spacing: NBSpacing.small) {
+            VStack(spacing: NBSpacing.medium) {
+                NBSectionHeader(title: "Profile", subtitle: "No NBlocker account required")
+
+                VStack(spacing: NBSpacing.xSmall) {
                     Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 58, weight: .regular))
+                        .font(.system(size: 42, weight: .regular))
                         .foregroundStyle(Color.accentColor)
-                        .frame(width: 96, height: 96)
+                        .frame(width: 68, height: 68)
                         .glassEffect(
-                            .regular.tint(Color.accentColor.opacity(0.18)),
+                            .regular.tint(Color.accentColor.opacity(0.16)),
                             in: Circle()
                         )
 
                     Text("Local profile")
-                        .font(.title3.weight(.semibold))
+                        .font(.headline)
 
                     Text("Your settings stay on this device")
-                        .font(.subheadline)
+                        .font(.caption2)
                         .foregroundStyle(NBColor.secondaryText)
                 }
                 .frame(maxWidth: .infinity)
@@ -44,12 +46,11 @@ struct ProfileView: View {
                 }
             }
             .padding(.horizontal, NBSpacing.standard)
-            .padding(.top, NBSpacing.medium)
-            .padding(.bottom, NBSpacing.large)
+            .padding(.top, NBSpacing.small)
+            .padding(.bottom, NBSpacing.medium)
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("Profile")
-        .toolbarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("screen.profile")
     }
 
