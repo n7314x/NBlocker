@@ -39,12 +39,18 @@ struct NBSettingRow<Trailing: View>: View {
     }
 }
 
-extension NBSettingRow where Trailing == Image {
+struct NBDisclosureIndicator: View {
+    var body: some View {
+        Image(systemName: "chevron.right")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(NBColor.quietText)
+    }
+}
+
+extension NBSettingRow where Trailing == NBDisclosureIndicator {
     init(symbol: String, title: String, subtitle: String? = nil) {
         self.init(symbol: symbol, title: title, subtitle: subtitle) {
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(NBColor.quietText)
+            NBDisclosureIndicator()
         }
     }
 }
