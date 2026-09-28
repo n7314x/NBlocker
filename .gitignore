@@ -1,0 +1,14 @@
+.DS_Store
+.build/
+/NBlocker.xcodeproj/
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.ipa
+*.dSYM
+*.mobileprovision
+Signing.xcconfig
+.env
+.env.*
+!.env.example
