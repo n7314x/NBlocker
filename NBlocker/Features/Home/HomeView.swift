@@ -10,12 +10,6 @@ struct HomeView: View {
 
         ScrollView {
             VStack(spacing: NBSpacing.large) {
-                HStack {
-                    Text("NBlocker").font(NBTypography.pageTitle)
-                    Spacer()
-                    NBGlassCapsule(symbol: "scope", title: "Focus", tint: platform.accentColor)
-                }
-
                 PlatformUsageView(platform: platform, statistics: stats)
 
                 Button("See activity") {
@@ -36,7 +30,8 @@ struct HomeView: View {
                     NBCard {
                         HStack {
                             VStack(alignment: .leading, spacing: NBSpacing.xSmall) {
-                                Text(platform.settingsTitle).font(.headline)
+                                Text(platform.settingsTitle)
+                                    .font(.headline)
                                 Text("Choose what stays useful and what disappears")
                                     .font(.subheadline)
                                     .foregroundStyle(NBColor.secondaryText)
@@ -53,9 +48,10 @@ struct HomeView: View {
                 CurrentRoutineCard(routine: environment.routines.activeRoutine())
             }
             .padding(.horizontal, NBSpacing.standard)
-            .padding(.top, NBSpacing.large)
-            .padding(.bottom, NBSpacing.xLarge)
+            .padding(.top, NBSpacing.medium)
+            .padding(.bottom, NBSpacing.large)
         }
+        .scrollIndicators(.hidden)
         .background {
             RadialGradient(
                 colors: [platform.accentColor.opacity(0.12), .clear],
@@ -66,7 +62,19 @@ struct HomeView: View {
             .ignoresSafeArea()
             .animation(NBAnimation.content, value: platform)
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle("NBlocker")
+        .toolbarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    router.selectedTab = .protection
+                    HapticManager.play(.light)
+                } label: {
+                    Label("Focus", systemImage: "scope")
+                }
+                .accessibilityIdentifier("home.focus")
+            }
+        }
         .accessibilityIdentifier("screen.home")
     }
 }

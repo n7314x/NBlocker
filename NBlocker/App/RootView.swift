@@ -7,20 +7,42 @@ struct RootView: View {
     var body: some View {
         @Bindable var router = environment.router
 
-        ZStack {
-            NBColor.canvas.ignoresSafeArea()
-            Group {
-                switch router.selectedTab {
-                case .sleep: NavigationStack { SleepView() }
-                case .activity: NavigationStack { ActivityView() }
-                case .home: NavigationStack { HomeView() }
-                case .protection: NavigationStack { ProtectionView() }
-                case .profile: NavigationStack { ProfileView() }
+        TabView(selection: $router.selectedTab) {
+            Tab("Sleep", systemImage: RootTab.sleep.symbolName, value: RootTab.sleep) {
+                NavigationStack {
+                    SleepView()
+                }
+            }
+
+            Tab("Activity", systemImage: RootTab.activity.symbolName, value: RootTab.activity) {
+                NavigationStack {
+                    ActivityView()
+                }
+            }
+
+            Tab("Home", systemImage: RootTab.home.symbolName, value: RootTab.home) {
+                NavigationStack {
+                    HomeView()
+                }
+            }
+
+            Tab("Protection", systemImage: RootTab.protection.symbolName, value: RootTab.protection) {
+                NavigationStack {
+                    ProtectionView()
+                }
+            }
+
+            Tab("Profile", systemImage: RootTab.profile.symbolName, value: RootTab.profile) {
+                NavigationStack {
+                    ProfileView()
                 }
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            NBBottomBar(selection: $router.selectedTab)
+        .tint(Color.accentColor)
+        .background(NBColor.canvas.ignoresSafeArea())
+        .onChange(of: router.selectedTab) { oldValue, newValue in
+            guard oldValue != newValue else { return }
+            HapticManager.play(.selection)
         }
         .fullScreenCover(item: $router.presentedBrowser) { platform in
             switch platform {

@@ -16,7 +16,6 @@ struct NBGlassButton<Label: View>: View {
                 .padding(.horizontal, NBSpacing.standard)
                 .frame(minHeight: 44)
         }
-        .buttonStyle(.plain)
-        .glassEffect(.regular.interactive())
+        .buttonStyle(.glass)
     }
 }

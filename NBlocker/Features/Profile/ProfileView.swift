@@ -6,17 +6,27 @@ struct ProfileView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: NBSpacing.large) {
-                NBSectionHeader(title: "Profile", subtitle: "No NBlocker account required")
                 VStack(spacing: NBSpacing.small) {
                     Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 72))
+                        .font(.system(size: 58, weight: .regular))
                         .foregroundStyle(Color.accentColor)
-                    Text("Local profile").font(.title3.weight(.semibold))
+                        .frame(width: 96, height: 96)
+                        .glassEffect(
+                            .regular.tint(Color.accentColor.opacity(0.18)),
+                            in: Circle()
+                        )
+
+                    Text("Local profile")
+                        .font(.title3.weight(.semibold))
+
                     Text("Your settings stay on this device")
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(NBColor.secondaryText)
                 }
+                .frame(maxWidth: .infinity)
+
                 ProfileStatsView(usage: environment.usage.statistics())
+
                 NBCard {
                     VStack(spacing: 0) {
                         link("Appearance", "circle.lefthalf.filled") { AppearanceSettingsView() }
@@ -33,8 +43,11 @@ struct ProfileView: View {
                     }
                 }
             }
-            .padding(NBSpacing.standard)
+            .padding(.horizontal, NBSpacing.standard)
+            .padding(.top, NBSpacing.medium)
+            .padding(.bottom, NBSpacing.large)
         }
+        .scrollIndicators(.hidden)
         .navigationTitle("Profile")
         .toolbarTitleDisplayMode(.inline)
         .accessibilityIdentifier("screen.profile")

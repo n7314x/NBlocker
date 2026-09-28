@@ -6,31 +6,52 @@ struct SleepView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: NBSpacing.large) {
-                NBSectionHeader(title: "Sleep", subtitle: "Quiet routines without remote tracking")
+                Text("Quiet routines without remote tracking.")
+                    .font(.footnote)
+                    .foregroundStyle(NBColor.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 ZStack {
-                    Circle().fill(Color.indigo.opacity(0.12)).frame(width: 190, height: 190)
+                    Circle()
+                        .fill(Color.indigo.opacity(0.12))
+                        .frame(width: 170, height: 170)
+
                     Image(systemName: "moon.zzz.fill")
-                        .font(.system(size: 74))
+                        .font(.system(size: 68))
                         .foregroundStyle(Color.indigo.opacity(0.9))
-                        .shadow(color: .indigo.opacity(0.35), radius: 30)
+                        .shadow(color: .indigo.opacity(0.32), radius: 26)
                 }
+                .frame(maxWidth: .infinity)
+
                 CurrentRoutineCard(routine: environment.routines.activeRoutine())
+
                 NavigationLink {
                     RoutinesView()
                 } label: {
                     NBCard {
-                        NBSettingRow(symbol: "calendar.badge.clock", title: "Routines", subtitle: "Review schedules and filtering modes")
+                        NBSettingRow(
+                            symbol: "calendar.badge.clock",
+                            title: "Routines",
+                            subtitle: "Review schedules and filtering modes"
+                        )
                     }
                 }
                 .buttonStyle(.plain)
+
                 NBCard {
-                    Label("Sleep scheduling uses on-device routine times. System app blocking needs provisioned Screen Time capabilities.", systemImage: "info.circle")
-                        .font(.footnote)
-                        .foregroundStyle(NBColor.secondaryText)
+                    Label(
+                        "Sleep scheduling uses on-device routine times. System app blocking needs provisioned Screen Time capabilities.",
+                        systemImage: "info.circle"
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(NBColor.secondaryText)
                 }
             }
-            .padding(NBSpacing.standard)
+            .padding(.horizontal, NBSpacing.standard)
+            .padding(.top, NBSpacing.medium)
+            .padding(.bottom, NBSpacing.large)
         }
+        .scrollIndicators(.hidden)
         .navigationTitle("Sleep")
         .toolbarTitleDisplayMode(.inline)
         .accessibilityIdentifier("screen.sleep")

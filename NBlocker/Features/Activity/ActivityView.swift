@@ -9,7 +9,10 @@ struct ActivityView: View {
 
         ScrollView {
             VStack(spacing: NBSpacing.large) {
-                NBSectionHeader(title: "Activity", subtitle: "Only time spent inside NBlocker is counted")
+                Text("Only time spent inside NBlocker is counted.")
+                    .font(.footnote)
+                    .foregroundStyle(NBColor.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 NBUsageRing(
                     progress: min(total.duration / 3_600, 1),
@@ -35,8 +38,11 @@ struct ActivityView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(NBSpacing.standard)
+            .padding(.horizontal, NBSpacing.standard)
+            .padding(.top, NBSpacing.medium)
+            .padding(.bottom, NBSpacing.large)
         }
+        .scrollIndicators(.hidden)
         .navigationTitle("Activity")
         .toolbarTitleDisplayMode(.inline)
         .accessibilityIdentifier("screen.activity")

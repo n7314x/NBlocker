@@ -1,6 +1,6 @@
 import Observation
 
-enum RootTab: String, CaseIterable, Identifiable, Sendable {
+enum RootTab: String, CaseIterable, Identifiable, Hashable, Sendable {
     case sleep
     case activity
     case home
