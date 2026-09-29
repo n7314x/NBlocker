@@ -49,7 +49,7 @@ final class NavigationUITests: XCTestCase {
         carousel.swipeLeft()
         let youtube = app.buttons["platform.youtube"]
         XCTAssertTrue(youtube.waitForExistence(timeout: 5))
-        XCTAssertTrue(youtube.isHittable)
+        XCTAssertTrue(waitForHittable(youtube, timeout: 5))
         youtube.tap()
         closeBrowser()
     }
@@ -76,6 +76,12 @@ final class NavigationUITests: XCTestCase {
 
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    private func waitForHittable(_ element: XCUIElement, timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "exists == true AND hittable == true")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 
     private func closeBrowser() {
