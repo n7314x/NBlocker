@@ -11,6 +11,8 @@ struct NBlockerApp: App {
             RootView()
                 .environment(environment)
                 .preferredColorScheme(.dark)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(NBColor.canvas.ignoresSafeArea())
         }
         .onChange(of: scenePhase) { _, newValue in
             if newValue != .active {

@@ -38,7 +38,7 @@ struct NBSettingRow<Trailing: View>: View {
             Spacer(minLength: NBSpacing.small)
             trailing
         }
-        .frame(minHeight: 38)
+        .frame(minHeight: 40)
         .contentShape(Rectangle())
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-enum Platform: String, Codable, CaseIterable, Identifiable, Sendable {
+enum Platform: String, Codable, CaseIterable, Identifiable, Hashable, Sendable {
     case instagram
     case youtube
 

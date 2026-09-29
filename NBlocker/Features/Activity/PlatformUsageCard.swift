@@ -6,17 +6,17 @@ struct PlatformUsageCard: View {
 
     var body: some View {
         NBCard {
-            HStack(spacing: NBSpacing.standard) {
-                NBPlatformIcon(platform: platform, size: 48)
+            HStack(spacing: NBSpacing.medium) {
+                NBPlatformIcon(platform: platform, size: 42)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(platform.displayName).font(.headline)
+                    Text(platform.displayName).font(.subheadline.weight(.semibold))
                     Text("\(statistics.sessions) sessions")
                         .font(.caption)
                         .foregroundStyle(NBColor.secondaryText)
                 }
                 Spacer()
                 Text(statistics.duration.compactDuration)
-                    .font(.system(.title3, design: .rounded, weight: .semibold))
+                    .font(.system(.body, design: .rounded, weight: .semibold))
                     .contentTransition(.numericText())
             }
         }

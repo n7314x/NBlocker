@@ -12,8 +12,8 @@ struct NBGlassButton<Label: View>: View {
     var body: some View {
         Button(action: action) {
             label
-                .font(.body.weight(.semibold))
-                .padding(.horizontal, NBSpacing.standard)
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, NBSpacing.medium)
                 .frame(minHeight: 44)
         }
         .buttonStyle(.glass)

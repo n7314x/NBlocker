@@ -51,6 +51,25 @@ targets:
         buildPhase: resources
     info:
       path: Resources/Info/NBlocker-Info.plist
+      properties:
+        CFBundleDisplayName: NBlocker
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSRequiresIPhoneOS: true
+        UIApplicationSupportsIndirectInputEvents: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        "UISupportedInterfaceOrientations~ipad":
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleURLTypes:
+          - CFBundleURLName: app.nblocker.links
+            CFBundleURLSchemes:
+              - nblocker
     entitlements:
       path: Entitlements/NBlocker.entitlements
     settings:

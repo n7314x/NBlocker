@@ -5,20 +5,21 @@ struct ProtectedAppsView: View {
 
     var body: some View {
         NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.standard) {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
                 HStack {
                     Label("Protected Apps", systemImage: "square.grid.2x2.fill")
-                        .font(.headline)
+                        .font(.subheadline.weight(.semibold))
                     Spacer()
                     Text("0 selected")
                         .font(.caption)
                         .foregroundStyle(NBColor.secondaryText)
                 }
                 Text(state.explanation)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(NBColor.secondaryText)
                 Button("Manage Apps") {}
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.small)
                     .disabled(state != .approved)
             }
         }

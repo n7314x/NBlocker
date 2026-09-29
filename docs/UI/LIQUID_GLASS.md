@@ -2,8 +2,8 @@
 
 The deployment target is iOS 26, so NBlocker uses the native SwiftUI
 `glassEffect(_:in:)`, `GlassEffectContainer`, and glass button styles. Glass appears
-on the bottom navigation, browser toolbar, compact buttons, capsules, selector
-controls, and transient overlays.
+through the native tab bar, browser toolbar, compact buttons, capsules, and transient
+overlays.
 
 Glass is applied after sizing and foreground styling so its shape and interaction
 response are correct. Groups of nearby toolbar items share a `GlassEffectContainer`

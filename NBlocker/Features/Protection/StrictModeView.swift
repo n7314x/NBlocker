@@ -7,12 +7,12 @@ struct StrictModeView: View {
 
     var body: some View {
         NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.standard) {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Strict Mode").font(.headline)
+                        Text("Strict Mode").font(.subheadline.weight(.semibold))
                         Text("Adds deliberate override friction inside NBlocker")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundStyle(NBColor.secondaryText)
                     }
                     Spacer()
@@ -43,9 +43,10 @@ struct StrictModeView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .font(.caption)
 
                 Text("Without Screen Time entitlement support, this affects only controls managed by NBlocker.")
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(NBColor.quietText)
             }
         }

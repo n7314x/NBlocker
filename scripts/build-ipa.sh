@@ -20,6 +20,21 @@ xcodebuild \
   clean build
 
 app_path="$build_root/DerivedData/Build/Products/Release-iphoneos/NBlocker.app"
+python3 - "$app_path/Info.plist" <<'PY'
+import plistlib
+import sys
+
+with open(sys.argv[1], "rb") as stream:
+    info = plistlib.load(stream)
+
+if info.get("UILaunchScreen", {}).get("UIColorName") != "LaunchBackground":
+    raise SystemExit("error: built app is missing its modern launch-screen declaration")
+if info.get("UISupportedInterfaceOrientations") != ["UIInterfaceOrientationPortrait"]:
+    raise SystemExit("error: built app has an unexpected iPhone orientation configuration")
+if set(info.get("UIDeviceFamily", [])) != {1, 2}:
+    raise SystemExit("error: built app must remain universal for iPhone and iPad")
+PY
+
 "$repo_root/scripts/package-ipa.sh" "$app_path" "$output_path"
 
 echo "This IPA is unsigned and must be signed by the installation workflow."

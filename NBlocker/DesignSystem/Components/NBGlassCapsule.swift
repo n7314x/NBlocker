@@ -7,9 +7,9 @@ struct NBGlassCapsule: View {
 
     var body: some View {
         Label(title, systemImage: symbol)
-            .font(.subheadline.weight(.semibold))
-            .padding(.horizontal, NBSpacing.standard)
-            .frame(minHeight: 40)
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, NBSpacing.medium)
+            .frame(minHeight: 36)
             .glassEffect(.regular.tint(tint.opacity(0.32)))
     }
 }

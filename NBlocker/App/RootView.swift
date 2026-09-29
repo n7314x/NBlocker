@@ -7,29 +7,40 @@ struct RootView: View {
     var body: some View {
         @Bindable var router = environment.router
 
-        ZStack {
-            NBColor.canvas.ignoresSafeArea()
-
-            Group {
-                switch router.selectedTab {
-                case .sleep:
-                    NavigationStack { SleepView() }
-                case .activity:
-                    NavigationStack { ActivityView() }
-                case .home:
-                    NavigationStack { HomeView() }
-                case .protection:
-                    NavigationStack { ProtectionView() }
-                case .profile:
-                    NavigationStack { ProfileView() }
+        TabView(selection: $router.selectedTab) {
+            Tab("Sleep", systemImage: RootTab.sleep.symbolName, value: RootTab.sleep) {
+                NavigationStack {
+                    SleepView()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            Tab("Activity", systemImage: RootTab.activity.symbolName, value: RootTab.activity) {
+                NavigationStack {
+                    ActivityView()
+                }
+            }
+
+            Tab("Home", systemImage: RootTab.home.symbolName, value: RootTab.home) {
+                NavigationStack {
+                    HomeView()
+                }
+            }
+
+            Tab("Protection", systemImage: RootTab.protection.symbolName, value: RootTab.protection) {
+                NavigationStack {
+                    ProtectionView()
+                }
+            }
+
+            Tab("Profile", systemImage: RootTab.profile.symbolName, value: RootTab.profile) {
+                NavigationStack {
+                    ProfileView()
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .bottom, spacing: 4) {
-            NBBottomBar(selection: $router.selectedTab)
-        }
+        .background(NBColor.canvas.ignoresSafeArea())
+        .tint(Color.accentColor)
         .fullScreenCover(item: $router.presentedBrowser) { platform in
             switch platform {
             case .instagram:

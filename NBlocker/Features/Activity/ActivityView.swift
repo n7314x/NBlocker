@@ -7,43 +7,36 @@ struct ActivityView: View {
         let total = environment.usage.statistics()
         let days = environment.usage.lastSevenDays()
 
-        ScrollView {
-            VStack(spacing: NBSpacing.medium) {
-                NBSectionHeader(
-                    title: "Activity",
-                    subtitle: "Only time spent inside NBlocker is counted"
-                )
+        NBRootScrollView {
+            NBSectionHeader(
+                title: "Activity",
+                subtitle: "Only time spent inside NBlocker is counted"
+            )
 
-                NBUsageRing(
-                    progress: min(total.duration / 3_600, 1),
-                    value: total.duration.compactDuration,
-                    label: "today"
-                )
-                .frame(maxWidth: .infinity)
-                .scaleEffect(0.86)
+            NBUsageRing(
+                progress: min(total.duration / 3_600, 1),
+                value: total.duration.compactDuration,
+                label: "today"
+            )
+            .frame(maxWidth: .infinity)
 
-                NBCard {
-                    NBSectionHeader(title: "Last seven days", subtitle: "Local app-contained sessions")
-                    NBUsageChart(days: days)
-                }
-
-                ForEach(Platform.allCases) { platform in
-                    NavigationLink {
-                        ActivityDetailView(platform: platform)
-                    } label: {
-                        PlatformUsageCard(
-                            platform: platform,
-                            statistics: environment.usage.statistics(for: platform)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
+            NBCard {
+                NBSectionHeader(title: "Last seven days", subtitle: "Local app-contained sessions")
+                NBUsageChart(days: days)
             }
-            .padding(.horizontal, NBSpacing.standard)
-            .padding(.top, NBSpacing.small)
-            .padding(.bottom, NBSpacing.medium)
+
+            ForEach(Platform.allCases) { platform in
+                NavigationLink {
+                    ActivityDetailView(platform: platform)
+                } label: {
+                    PlatformUsageCard(
+                        platform: platform,
+                        statistics: environment.usage.statistics(for: platform)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .scrollIndicators(.hidden)
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("screen.activity")
     }

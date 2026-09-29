@@ -4,52 +4,46 @@ struct ProfileView: View {
     @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: NBSpacing.medium) {
-                NBSectionHeader(title: "Profile", subtitle: "No NBlocker account required")
+        NBRootScrollView {
+            NBSectionHeader(title: "Profile", subtitle: "No NBlocker account required")
 
-                VStack(spacing: NBSpacing.xSmall) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 42, weight: .regular))
-                        .foregroundStyle(Color.accentColor)
-                        .frame(width: 68, height: 68)
-                        .glassEffect(
-                            .regular.tint(Color.accentColor.opacity(0.16)),
-                            in: Circle()
-                        )
+            VStack(spacing: NBSpacing.xSmall) {
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.system(size: 34, weight: .regular))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 56, height: 56)
+                    .glassEffect(
+                        .regular.tint(Color.accentColor.opacity(0.16)),
+                        in: Circle()
+                    )
 
-                    Text("Local profile")
-                        .font(.headline)
+                Text("Local profile")
+                    .font(.subheadline.weight(.semibold))
 
-                    Text("Your settings stay on this device")
-                        .font(.caption2)
-                        .foregroundStyle(NBColor.secondaryText)
-                }
-                .frame(maxWidth: .infinity)
+                Text("Your settings stay on this device")
+                    .font(.caption2)
+                    .foregroundStyle(NBColor.secondaryText)
+            }
+            .frame(maxWidth: .infinity)
 
-                ProfileStatsView(usage: environment.usage.statistics())
+            ProfileStatsView(usage: environment.usage.statistics())
 
-                NBCard {
-                    VStack(spacing: 0) {
-                        link("Appearance", "circle.lefthalf.filled") { AppearanceSettingsView() }
-                        Divider().overlay(NBColor.border)
-                        link("Notifications", "bell") { NotificationSettingsView() }
-                        Divider().overlay(NBColor.border)
-                        link("Privacy", "hand.raised") { PrivacySettingsView() }
-                        Divider().overlay(NBColor.border)
-                        link("App Icons", "app.dashed") { AppIconPickerView() }
-                        Divider().overlay(NBColor.border)
-                        link("Data & Debug", "externaldrive") { DebugSettingsView() }
-                        Divider().overlay(NBColor.border)
-                        link("About", "info.circle") { AboutView() }
-                    }
+            NBCard {
+                VStack(spacing: 0) {
+                    link("Appearance", "circle.lefthalf.filled") { AppearanceSettingsView() }
+                    Divider().overlay(NBColor.border)
+                    link("Notifications", "bell") { NotificationSettingsView() }
+                    Divider().overlay(NBColor.border)
+                    link("Privacy", "hand.raised") { PrivacySettingsView() }
+                    Divider().overlay(NBColor.border)
+                    link("App Icons", "app.dashed") { AppIconPickerView() }
+                    Divider().overlay(NBColor.border)
+                    link("Data & Debug", "externaldrive") { DebugSettingsView() }
+                    Divider().overlay(NBColor.border)
+                    link("About", "info.circle") { AboutView() }
                 }
             }
-            .padding(.horizontal, NBSpacing.standard)
-            .padding(.top, NBSpacing.small)
-            .padding(.bottom, NBSpacing.medium)
         }
-        .scrollIndicators(.hidden)
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("screen.profile")
     }

@@ -9,7 +9,7 @@ struct NBSectionHeader: View {
             Text(title).font(NBTypography.sectionTitle)
             if let subtitle {
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(NBColor.secondaryText)
             }
         }

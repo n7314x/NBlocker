@@ -16,13 +16,13 @@ struct BrowserToolbar: View {
                     Button("Platform Settings", systemImage: "slider.horizontal.3", action: showSettings)
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .accessibilityLabel("Browser menu")
             }
-            .padding(6)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 25, style: .continuous))
+            .padding(4)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
         .padding(.horizontal, NBSpacing.standard)
     }
@@ -38,8 +38,8 @@ struct BrowserToolbar: View {
             action()
         } label: {
             Image(systemName: symbol)
-                .font(.body.weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 50)
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 44)
         }
         .buttonStyle(.plain)
         .disabled(!enabled)

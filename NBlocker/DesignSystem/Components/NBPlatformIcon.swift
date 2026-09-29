@@ -17,7 +17,7 @@ struct NBPlatformIcon: View {
                 .foregroundStyle(platform.accentColor)
         }
         .frame(width: size, height: size)
-        .shadow(color: platform.accentColor.opacity(0.18), radius: 14)
+        .shadow(color: platform.accentColor.opacity(0.16), radius: 10)
         .accessibilityLabel(platform.displayName)
     }
 }
