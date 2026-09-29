@@ -91,9 +91,9 @@ final class NavigationUITests: XCTestCase {
             let controls = app.buttons["Browser controls"]
             XCTAssertTrue(controls.waitForExistence(timeout: 8))
             controls.tap()
-            let close = app.buttons["Close"]
-            XCTAssertTrue(close.waitForExistence(timeout: 2))
-            close.tap()
+            let home = app.buttons["Home"]
+            XCTAssertTrue(home.waitForExistence(timeout: 2))
+            home.tap()
         }
         assertScreen("screen.home")
     }

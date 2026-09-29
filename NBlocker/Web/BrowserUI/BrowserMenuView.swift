@@ -3,45 +3,46 @@ import SwiftUI
 struct BrowserMenuView: View {
     let model: WebViewModel
     let showAccounts: () -> Void
-    let showLinkActions: () -> Void
+    let openClipboard: () -> Void
     let showSettings: () -> Void
-    let closeBrowser: () -> Void
-    let dismiss: () -> Void
-
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: NBSpacing.small), count: 4)
+    let exitToHome: () -> Void
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: NBSpacing.small) {
-            control("chevron.backward", "Back", enabled: model.state.canGoBack) {
-                model.goBack()
-                dismiss()
+        GlassEffectContainer(spacing: NBSpacing.small) {
+            HStack(spacing: 2) {
+                control("chevron.backward", "Back", enabled: model.state.canGoBack) {
+                    model.goBack()
+                }
+                control("house.fill", "Home", action: exitToHome)
+                control("arrow.clockwise", "Refresh") {
+                    model.reload()
+                }
+                control("chevron.forward", "Forward", enabled: model.state.canGoForward) {
+                    model.goForward()
+                }
+                control("person.2.fill", "Switch accounts", action: showAccounts)
+                control("clipboard.fill", "Open link from clipboard", action: openClipboard)
+
+                Capsule()
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 1, height: 24)
+                    .padding(.horizontal, 5)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+
+                control("slider.horizontal.3", "Settings", action: showSettings)
             }
-            control("house.fill", "Home") {
-                model.loadHome()
-                dismiss()
-            }
-            control("arrow.clockwise", "Refresh") {
-                model.reload()
-                dismiss()
-            }
-            control("chevron.forward", "Forward", enabled: model.state.canGoForward) {
-                model.goForward()
-                dismiss()
-            }
-            control("person.2.fill", "Accounts", action: showAccounts)
-            control("link", "Link", enabled: model.state.currentURL != nil, action: showLinkActions)
-            control("gearshape.fill", "Settings", action: showSettings)
-            control("xmark", "Close", role: .destructive, action: closeBrowser)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .glassEffect(.regular, in: Capsule())
         }
-        .padding(NBSpacing.medium)
-        .frame(maxWidth: 340)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+            Capsule()
+                .stroke(Color.white.opacity(0.13), lineWidth: 0.6)
                 .allowsHitTesting(false)
         }
-        .shadow(color: .black.opacity(0.55), radius: 24, y: 12)
+        .shadow(color: .black.opacity(0.58), radius: 24, y: 12)
+        .shadow(color: Color.accentColor.opacity(0.12), radius: 16)
         .accessibilityIdentifier("browser.controlsMenu")
     }
 
@@ -49,28 +50,21 @@ struct BrowserMenuView: View {
         _ symbol: String,
         _ title: String,
         enabled: Bool = true,
-        role: ButtonRole? = nil,
         action: @escaping () -> Void
     ) -> some View {
-        Button(role: role) {
+        Button {
             HapticManager.play(.light)
             action()
         } label: {
-            VStack(spacing: NBSpacing.small) {
-                Image(systemName: symbol)
-                    .font(.system(size: 17, weight: .semibold))
-                    .frame(height: 22)
-                Text(title)
-                    .font(.caption2.weight(.medium))
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity, minHeight: 58)
-            .contentShape(Rectangle())
+            Image(systemName: symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .frame(width: 38, height: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.32)
+        .opacity(enabled ? 1 : 0.28)
         .accessibilityLabel(title)
-        .accessibilityIdentifier("browser.action.\(title.lowercased())")
+        .accessibilityIdentifier("browser.action.\(title.lowercased().replacingOccurrences(of: " ", with: "-"))")
     }
 }

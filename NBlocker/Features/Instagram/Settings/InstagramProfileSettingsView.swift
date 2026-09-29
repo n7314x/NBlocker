@@ -4,9 +4,9 @@ struct InstagramProfileSettingsView: View {
     @Binding var settings: InstagramSettings
 
     var body: some View {
-        NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.small) {
-                NBSectionHeader(title: "Profiles")
+        InstagramSettingsCard {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
+                NBSectionHeader(title: "Profiles", subtitle: "Controls being prepared for resilient filtering")
                 NBToggleRow(title: "Allow profiles", detail: "Profile route controls are planned", isOn: $settings.allowProfiles)
                     .disabled(true)
                 Divider().overlay(NBColor.border)

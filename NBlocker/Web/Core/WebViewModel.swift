@@ -54,6 +54,7 @@ final class WebViewModel {
 
     func configure(_ configuration: WKWebViewConfiguration) throws {
         configuration.websiteDataStore = .default()
+        configuration.limitsNavigationsToAppBoundDomains = false
         configuration.allowsInlineMediaPlayback = true
         configuration.allowsPictureInPictureMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
@@ -93,6 +94,32 @@ final class WebViewModel {
 
     func load(_ url: URL) {
         webView?.load(URLRequest(url: url))
+    }
+
+    func openURLRespectingNavigationPolicy(_ url: URL) {
+        switch navigationDisposition(for: url) {
+        case .allow:
+            load(url)
+        case let .redirect(secureURL):
+            load(secureURL)
+        case let .block(reason):
+            didBlockNavigation(reason: reason)
+        case .requestExternalOpen:
+            pendingExternalURL = url
+        }
+    }
+
+    @discardableResult
+    func openClipboardURL() -> Bool {
+        let pasteboard = UIPasteboard.general
+        let candidate = pasteboard.url?.absoluteString ?? pasteboard.string
+        guard let url = BrowserClipboardAction.url(from: candidate) else {
+            state.message = "Copy a valid web link, then try again."
+            HapticManager.play(.warning)
+            return false
+        }
+        openURLRespectingNavigationPolicy(url)
+        return true
     }
 
     func update(settings: PlatformSettings) {

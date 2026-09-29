@@ -93,6 +93,29 @@ final class RuleEngineTests: XCTestCase {
         )
     }
 
+    func testInstagramFirstPartyHostsStayInsideWrapper() throws {
+        let home = try XCTUnwrap(URL(string: "https://www.instagram.com/"))
+        let mobile = try XCTUnwrap(URL(string: "https://m.instagram.com/direct/inbox/"))
+        let lookalike = try XCTUnwrap(URL(string: "https://instagram.com.example.com/"))
+
+        XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: home, settings: .default), .allow)
+        XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: mobile, settings: .default), .allow)
+        XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: lookalike, settings: .default), .requestExternalOpen)
+    }
+
+    func testClipboardWebURLValidation() throws {
+        XCTAssertEqual(
+            BrowserClipboardAction.url(from: " instagram.com/p/example/ "),
+            try XCTUnwrap(URL(string: "https://instagram.com/p/example/"))
+        )
+        XCTAssertEqual(
+            BrowserClipboardAction.url(from: "https://example.com/path"),
+            try XCTUnwrap(URL(string: "https://example.com/path"))
+        )
+        XCTAssertNil(BrowserClipboardAction.url(from: "mailto:hello@example.com"))
+        XCTAssertNil(BrowserClipboardAction.url(from: "not a link"))
+    }
+
     func testTrustedAuthenticationHostsRemainInsideWebView() throws {
         let google = try XCTUnwrap(URL(string: "https://accounts.google.com/signin"))
         let facebook = try XCTUnwrap(URL(string: "https://www.facebook.com/login"))

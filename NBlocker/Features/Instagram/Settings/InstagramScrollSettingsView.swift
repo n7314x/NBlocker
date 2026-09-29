@@ -18,8 +18,8 @@ struct InstagramScrollSettingsView: View {
     }
 
     var body: some View {
-        NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.small) {
+        InstagramSettingsCard {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
                 NBSectionHeader(title: "Scroll Control", subtitle: "Gentle reminders inside this browser session")
                 NBToggleRow(title: "Time reminder", isOn: hasTimeReminder)
                 Stepper(

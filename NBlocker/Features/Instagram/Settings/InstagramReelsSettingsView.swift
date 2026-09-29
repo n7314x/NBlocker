@@ -4,8 +4,8 @@ struct InstagramReelsSettingsView: View {
     @Binding var settings: InstagramSettings
 
     var body: some View {
-        NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.small) {
+        InstagramSettingsCard {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
                 NBSectionHeader(title: "Reels", subtitle: "Limit short-form loops")
                 NBToggleRow(title: "Hide Reels tab", isOn: $settings.hideReelsTab)
                 Divider().overlay(NBColor.border)

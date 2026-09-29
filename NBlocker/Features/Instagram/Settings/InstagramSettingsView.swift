@@ -4,6 +4,7 @@ struct InstagramSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var settings: InstagramSettings
     @State private var confirmsSiteDataClear = false
+    @State private var selectedDetent: PresentationDetent = .fraction(0.94)
     let save: (InstagramSettings) -> Void
 
     init(settings: InstagramSettings, save: @escaping (InstagramSettings) -> Void) {
@@ -12,61 +13,68 @@ struct InstagramSettingsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: NBSpacing.large) {
-                    HStack(spacing: NBSpacing.medium) {
-                        NBPlatformIcon(platform: .instagram, size: 58)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("Instagram Settings").font(.title2.bold())
-                            Text("Keep connection, reduce loops")
-                                .font(.subheadline)
-                                .foregroundStyle(NBColor.secondaryText)
-                        }
-                        Spacer()
-                    }
+        ScrollView {
+            LazyVStack(spacing: NBSpacing.standard) {
+                InstagramSettingsHeader(filteringEnabled: settings.filteringEnabled) {
+                    save(settings)
+                    dismiss()
+                }
 
-                    InstagramBlockingSettingsView(settings: $settings)
-                    InstagramReelsSettingsView(settings: $settings)
-                    InstagramFeedSettingsView(settings: $settings)
-                    InstagramStoriesSettingsView(settings: $settings)
-                    InstagramMessagesSettingsView(settings: $settings)
-                    InstagramSearchSettingsView(settings: $settings)
-                    InstagramProfileSettingsView(settings: $settings)
-                    InstagramAppearanceSettingsView(settings: $settings)
-                    InstagramScrollSettingsView(settings: $settings)
+                InstagramBlockingSettingsView(settings: $settings)
+                InstagramReelsSettingsView(settings: $settings)
+                InstagramFeedSettingsView(settings: $settings)
+                InstagramStoriesSettingsView(settings: $settings)
+                InstagramMessagesSettingsView(settings: $settings)
+                InstagramSearchSettingsView(settings: $settings)
+                InstagramProfileSettingsView(settings: $settings)
+                InstagramAppearanceSettingsView(settings: $settings)
+                InstagramScrollSettingsView(settings: $settings)
 
-                    NBCard {
-                        VStack(alignment: .leading, spacing: NBSpacing.medium) {
-                            NBSectionHeader(title: "Accounts & Site Data", subtitle: "Authentication remains in WebKit")
-                            Button("Clear Instagram site data", role: .destructive) {
-                                confirmsSiteDataClear = true
-                            }
+                InstagramSettingsCard {
+                    VStack(alignment: .leading, spacing: NBSpacing.medium) {
+                        NBSectionHeader(title: "Accounts & Site Data", subtitle: "Instagram authentication stays in WebKit")
+                        Button(role: .destructive) {
+                            confirmsSiteDataClear = true
+                        } label: {
+                            Label("Clear Instagram site data", systemImage: "trash")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .frame(minHeight: 44)
                         }
                     }
                 }
-                .padding(NBSpacing.standard)
             }
-            .background(Color.black)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        save(settings)
-                        dismiss()
-                    }
-                    .buttonStyle(.glassProminent)
-                }
-            }
-            .confirmationDialog("Clear Instagram login and website data?", isPresented: $confirmsSiteDataClear) {
-                Button("Clear Website Data", role: .destructive) {
-                    Task { await CookieManager.clearWebsiteData(for: .instagram) }
-                }
-            } message: {
-                Text("This signs Instagram out. NBlocker never reads the credentials being removed.")
+            .padding(.horizontal, NBSpacing.standard)
+            .padding(.top, NBSpacing.small)
+            .padding(.bottom, 38)
+        }
+        .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.basedOnSize)
+        .background {
+            ZStack {
+                Color.black
+                RadialGradient(
+                    colors: [Platform.instagram.accentColor.opacity(0.08), .clear],
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: 380
+                )
+                .allowsHitTesting(false)
             }
         }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
+        .toggleStyle(NBLiquidGlassToggleStyle(tint: Platform.instagram.accentColor))
+        .confirmationDialog("Clear Instagram login and website data?", isPresented: $confirmsSiteDataClear) {
+            Button("Clear Website Data", role: .destructive) {
+                Task { await CookieManager.clearWebsiteData(for: .instagram) }
+            }
+        } message: {
+            Text("This signs Instagram out. NBlocker never reads the credentials being removed.")
+        }
+        .presentationDetents([.fraction(0.94), .large], selection: $selectedDetent)
+        .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(32)
+        .presentationBackground(NBColor.canvas)
+        .presentationContentInteraction(.scrolls)
         .onDisappear { save(settings) }
         .accessibilityIdentifier("settings.instagram")
     }

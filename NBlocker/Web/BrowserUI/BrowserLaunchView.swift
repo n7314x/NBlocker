@@ -6,6 +6,7 @@ struct BrowserLaunchView: View {
     let retry: () -> Void
     let close: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isPresented = false
 
     var body: some View {
         ZStack {
@@ -25,8 +26,24 @@ struct BrowserLaunchView: View {
             .allowsHitTesting(false)
 
             VStack(spacing: NBSpacing.large) {
-                NBPlatformIcon(platform: platform, size: 82)
-                    .padding(.bottom, NBSpacing.small)
+                ZStack {
+                    Circle()
+                        .stroke(platform.accentColor.opacity(0.12), lineWidth: 1)
+                        .frame(width: 128, height: 128)
+                        .scaleEffect(isPresented || reduceMotion ? 1 : 0.62)
+                        .opacity(isPresented ? 1 : 0)
+                        .allowsHitTesting(false)
+
+                    Circle()
+                        .fill(platform.accentColor.opacity(0.13))
+                        .frame(width: 104, height: 104)
+                        .blur(radius: 18)
+                        .allowsHitTesting(false)
+
+                    NBPlatformIcon(platform: platform, size: 82)
+                        .scaleEffect(isPresented || reduceMotion ? 1 : 0.82)
+                }
+                .padding(.bottom, NBSpacing.small)
 
                 switch presentation {
                 case .preparing:
@@ -71,6 +88,11 @@ struct BrowserLaunchView: View {
                 Spacer()
             }
             .padding(NBSpacing.standard)
+        }
+        .onAppear {
+            withAnimation(reduceMotion ? NBAnimation.quick : .spring(response: 0.62, dampingFraction: 0.78)) {
+                isPresented = true
+            }
         }
         .accessibilityIdentifier("browser.launch")
     }

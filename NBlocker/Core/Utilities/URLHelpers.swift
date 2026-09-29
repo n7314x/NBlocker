@@ -25,7 +25,7 @@ enum URLHelpers {
         let host = (url.host ?? "").lowercased()
         let components = url.pathComponents.filter { $0 != "/" }
 
-        if host == "instagram.com" || host == "www.instagram.com" {
+        if isInstagramFirstPartyHost(host) {
             guard let first = components.first?.lowercased() else { return .instagramHome }
             switch first {
             case "direct": return .instagramMessages
@@ -71,6 +71,21 @@ enum URLHelpers {
         }
     }
 
+    static func isFirstPartyWebURL(_ url: URL, for platform: Platform) -> Bool {
+        guard
+            let scheme = url.scheme?.lowercased(),
+            ["http", "https"].contains(scheme),
+            let host = url.host?.lowercased()
+        else { return false }
+
+        switch platform {
+        case .instagram:
+            return isInstagramFirstPartyHost(host)
+        case .youtube:
+            return ["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"].contains(host)
+        }
+    }
+
     static func isTrustedAuthenticationURL(_ url: URL, for platform: Platform) -> Bool {
         guard url.scheme?.lowercased() == "https", let host = url.host?.lowercased() else {
             return false
@@ -85,5 +100,9 @@ enum URLHelpers {
         return allowedDomains.contains { domain in
             host == domain || host.hasSuffix(".\(domain)")
         }
+    }
+
+    private static func isInstagramFirstPartyHost(_ host: String) -> Bool {
+        host == "instagram.com" || host.hasSuffix(".instagram.com")
     }
 }

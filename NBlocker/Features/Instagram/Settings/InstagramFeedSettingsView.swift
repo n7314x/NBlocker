@@ -4,8 +4,8 @@ struct InstagramFeedSettingsView: View {
     @Binding var settings: InstagramSettings
 
     var body: some View {
-        NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.small) {
+        InstagramSettingsCard {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
                 NBSectionHeader(title: "Feed", subtitle: "Reduce algorithmic inserts")
                 NBToggleRow(title: "Hide feed", isOn: $settings.hideFeed)
                 Divider().overlay(NBColor.border)

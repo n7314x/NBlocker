@@ -4,8 +4,8 @@ struct InstagramMessagesSettingsView: View {
     @Binding var settings: InstagramSettings
 
     var body: some View {
-        NBCard {
-            VStack(alignment: .leading, spacing: NBSpacing.small) {
+        InstagramSettingsCard {
+            VStack(alignment: .leading, spacing: NBSpacing.medium) {
                 NBSectionHeader(title: "Messages", subtitle: "Keep direct communication available")
                 NBToggleRow(title: "DMs-only mode", detail: "Suppresses distracting navigation while in messages", isOn: $settings.messagesOnly)
                 Divider().overlay(NBColor.border)

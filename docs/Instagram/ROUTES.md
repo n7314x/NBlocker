@@ -10,7 +10,8 @@
 | `/accounts/*` | accounts | allow |
 | other same-host paths | profile/content | allow |
 
-Only `instagram.com` and its `www` host are treated as platform routes. HTTP is
+`instagram.com` and its first-party subdomains are treated as platform routes so
+Instagram-owned mobile, API, and login handoffs remain inside the wrapper. HTTP is
 upgraded to HTTPS. HTTPS Facebook authentication hosts are allowed for Instagram's
-site-owned login flow. Other top-level hosts require an explicit external-open action
-rather than inheriting the authenticated platform context.
+site-owned login flow. Lookalike domains and other top-level hosts require an explicit
+external-open action rather than inheriting the authenticated platform context.
