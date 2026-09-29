@@ -33,6 +33,7 @@ struct BrowserLaunchView: View {
                     VStack(spacing: NBSpacing.small) {
                         Text("Applying your preferences")
                             .font(.title2.bold())
+                            .accessibilityIdentifier("browser.loading")
                         Text("Setting up content filters for \(platform.displayName)")
                             .font(.subheadline)
                             .foregroundStyle(NBColor.secondaryText)
@@ -71,7 +72,7 @@ struct BrowserLaunchView: View {
             }
             .padding(NBSpacing.standard)
         }
-        .accessibilityIdentifier("browser.loading")
+        .accessibilityIdentifier("browser.launch")
     }
 }
 
