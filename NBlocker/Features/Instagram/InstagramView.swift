@@ -4,7 +4,7 @@ struct InstagramView: View {
     @State private var model: WebViewModel
 
     init(settings: PlatformSettings, usageTracker: UsageTracker) {
-        let minimumPreparationDuration = ProcessInfo.processInfo.arguments.contains("-NBlockerUITesting") ? 3.0 : 0.7
+        let minimumPreparationDuration = ProcessInfo.processInfo.arguments.contains("-NBlockerUITesting") ? 60.0 : 0.7
         _model = State(initialValue: WebViewModel(
             platform: .instagram,
             settings: settings,
