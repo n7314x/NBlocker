@@ -41,7 +41,7 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(instagram.waitForExistence(timeout: 5))
         XCTAssertTrue(instagram.isHittable)
         instagram.tap()
-        XCTAssertTrue(element("browser.loading").waitForExistence(timeout: 1))
+        XCTAssertTrue(app.staticTexts["Applying your preferences"].waitForExistence(timeout: 2))
         XCTAssertTrue(element("browser.instagram").waitForExistence(timeout: 2))
         closeBrowser()
 
