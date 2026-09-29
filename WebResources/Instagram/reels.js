@@ -4,6 +4,7 @@
   if (!runtime) return;
 
   window.NBlocker?.register("instagram.reels.entries", (root) => {
+    if (!runtime.config.filteringEnabled) return;
     const anchors = root.querySelectorAll?.('a[href^="/reel/"], a[href^="/reels/"]') || [];
     for (const anchor of anchors) {
       const inNavigation = anchor.closest('nav, [role="navigation"]');

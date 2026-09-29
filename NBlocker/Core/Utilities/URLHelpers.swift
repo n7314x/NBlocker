@@ -102,7 +102,61 @@ enum URLHelpers {
         }
     }
 
+    static func webURL(forInstagramAppURL url: URL) -> URL? {
+        guard url.scheme?.lowercased() == "instagram" else { return nil }
+        let host = url.host?.lowercased()
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+
+        if host == "user",
+           let username = components?.queryItems?.first(where: { $0.name == "username" })?.value,
+           isSafeInstagramPathComponent(username) {
+            return URL(string: "https://www.instagram.com/\(username)/")
+        }
+
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+        if host == "reels_audio", let identifier = pathComponents.first,
+           isSafeInstagramPathComponent(identifier) {
+            return URL(string: "https://www.instagram.com/reels/audio/\(identifier)/")
+        }
+
+        return nil
+    }
+
+    static func isHarmlessInternalURL(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased() else { return true }
+        return ["about", "blob", "data", "javascript"].contains(scheme)
+    }
+
+    static func isKnownInstagramAppScheme(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased() else { return false }
+        return scheme == "instagram" || scheme == "fb" || scheme == "facebook" ||
+            scheme.hasPrefix("fb")
+    }
+
+    static func isRestorableWebURL(_ url: URL, for platform: Platform) -> Bool {
+        guard url.scheme?.lowercased() == "https", isFirstPartyWebURL(url, for: platform) else {
+            return false
+        }
+        guard !isTransientAuthenticationURL(url) else { return false }
+        return true
+    }
+
     private static func isInstagramFirstPartyHost(_ host: String) -> Bool {
         host == "instagram.com" || host.hasSuffix(".instagram.com")
+    }
+
+    private static func isSafeInstagramPathComponent(_ value: String) -> Bool {
+        !value.isEmpty && value.range(of: "^[A-Za-z0-9._-]+$", options: .regularExpression) != nil
+    }
+
+    private static func isTransientAuthenticationURL(_ url: URL) -> Bool {
+        let path = url.path.lowercased()
+        if path.contains("/oauth/") || path.contains("/accounts/authorize") || path.contains("/auth/callback") {
+            return true
+        }
+        let transientQueryNames = Set(["code", "state", "oauth_token", "access_token"])
+        return URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.contains {
+            transientQueryNames.contains($0.name.lowercased())
+        } == true
     }
 }

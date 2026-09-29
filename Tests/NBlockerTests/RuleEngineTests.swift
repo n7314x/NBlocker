@@ -10,12 +10,12 @@ final class RuleEngineTests: XCTestCase {
         settings.instagram.hideRecommendedAccounts = false
         let ids = Set(RuleEngine().enabledRules(for: .instagram, settings: settings).map(\.id))
         XCTAssertTrue(ids.contains("instagram.reels.entries"))
-        XCTAssertFalse(ids.contains("instagram.explore.entries"))
-        XCTAssertTrue(ids.contains("instagram.feed.suggestions"), "Detection remains active for browser metrics")
-        XCTAssertTrue(ids.contains("instagram.feed.ads"), "Ad detection remains active for browser metrics")
+        XCTAssertTrue(ids.contains("instagram.explore.entries"))
+        XCTAssertTrue(ids.contains("instagram.feed.suggestions"))
+        XCTAssertTrue(ids.contains("instagram.feed.ads"))
     }
 
-    func testInstagramOptionalRulesMatchSettings() {
+    func testInstagramOptionalRulesRemainAvailableForLiveChanges() {
         var settings = PlatformSettings.default
         settings.instagram.blockPostSearch = true
         settings.instagram.scrollReminderPosts = 20
@@ -30,17 +30,17 @@ final class RuleEngineTests: XCTestCase {
         settings.youtube.disableAutoplay = false
         let ids = Set(RuleEngine().enabledRules(for: .youtube, settings: settings).map(\.id))
         XCTAssertTrue(ids.contains("youtube.shorts.entries"))
-        XCTAssertFalse(ids.contains("youtube.playback.autoplay"))
+        XCTAssertTrue(ids.contains("youtube.playback.autoplay"))
     }
 
-    func testMasterSwitchLeavesOnlySharedInfrastructure() {
+    func testMasterSwitchKeepsDormantRulesAvailableForLiveUpdates() {
         var settings = PlatformSettings.default
         settings.instagram.filteringEnabled = false
         settings.youtube.filteringEnabled = false
 
         for platform in Platform.allCases {
             let rules = RuleEngine().enabledRules(for: platform, settings: settings)
-            XCTAssertTrue(rules.allSatisfy { $0.platform == nil })
+            XCTAssertTrue(rules.contains { $0.platform == platform })
         }
     }
 
@@ -101,6 +101,107 @@ final class RuleEngineTests: XCTestCase {
         XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: home, settings: .default), .allow)
         XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: mobile, settings: .default), .allow)
         XCTAssertEqual(NavigationGuard(platform: .instagram).disposition(for: lookalike, settings: .default), .requestExternalOpen)
+    }
+
+    func testInstagramAppURLIsMappedOrSilentlyIgnored() throws {
+        let profile = try XCTUnwrap(URL(string: "instagram://user?username=nblocker.test"))
+        let camera = try XCTUnwrap(URL(string: "instagram://story-camera"))
+        let expected = try XCTUnwrap(URL(string: "https://www.instagram.com/nblocker.test/"))
+
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: profile, settings: .default),
+            .redirect(expected)
+        )
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: camera, settings: .default),
+            .cancelSilently
+        )
+    }
+
+    func testUnsupportedSubframeNavigationIsSilent() throws {
+        let url = try XCTUnwrap(URL(string: "unknown-app://background-operation"))
+        let context = NavigationContext(isMainFrame: false, isUserInitiated: false)
+
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: url, settings: .default, context: context),
+            .cancelSilently
+        )
+    }
+
+    func testBackgroundInternalNavigationIsSilent() throws {
+        let url = try XCTUnwrap(URL(string: "about:blank"))
+        let context = NavigationContext(isMainFrame: true, isUserInitiated: false)
+
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: url, settings: .default, context: context),
+            .cancelSilently
+        )
+    }
+
+    func testExternalTopLevelLinkStillRequestsExplicitOpen() throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/path"))
+        let context = NavigationContext(isMainFrame: true, isUserInitiated: true)
+
+        XCTAssertEqual(
+            NavigationGuard(platform: .instagram).disposition(for: url, settings: .default, context: context),
+            .requestExternalOpen
+        )
+    }
+
+    func testSettingsDismissalWithoutChangesDoesNotReloadOrNavigate() {
+        let settings = PlatformSettings.default
+        let plan = BrowserSettingsUpdate.plan(for: .instagram, current: settings, updated: settings)
+
+        XCTAssertEqual(plan, .noChange)
+        XCTAssertFalse(plan.requestsReload)
+        XCTAssertNil(plan.navigationTarget)
+    }
+
+    func testSettingsChangesApplyLiveWithoutReloadOrHomeNavigation() {
+        let current = PlatformSettings.default
+        var updated = current
+        updated.instagram.hideExplore.toggle()
+        let plan = BrowserSettingsUpdate.plan(for: .instagram, current: current, updated: updated)
+
+        XCTAssertEqual(plan, .applyLive)
+        XCTAssertFalse(plan.requestsReload)
+        XCTAssertNil(plan.navigationTarget)
+    }
+
+    func testChangedSettingsProduceUpdatedLiveConfiguration() throws {
+        var settings = PlatformSettings.default
+        settings.instagram.hideExplore = false
+
+        let json = try RuleEngine().configurationJSON(platform: .instagram, settings: settings)
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        XCTAssertEqual(object["hideExplore"] as? Bool, false)
+    }
+
+    func testMenuVisibilityDoesNotChangeBrowserViewportLayout() {
+        let closed = BrowserViewportLayout.fullScreen(browserMenuVisible: false)
+        let open = BrowserViewportLayout.fullScreen(browserMenuVisible: true)
+
+        XCTAssertEqual(closed, open)
+        XCTAssertEqual(open.contentInset, .zero)
+        XCTAssertEqual(open.scrollIndicatorInsets, .zero)
+        XCTAssertEqual(open.adjustmentBehavior, .never)
+    }
+
+    func testBrowserSessionRestoresSafeURLButNotBlockedReel() throws {
+        let suite = "BrowserSessionStoreTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = BrowserSessionStore(defaults: defaults)
+        let profile = try XCTUnwrap(URL(string: "https://www.instagram.com/nblocker/"))
+        let reel = try XCTUnwrap(URL(string: "https://www.instagram.com/reel/abc/"))
+
+        store.save(profile, for: .instagram)
+        XCTAssertEqual(store.restoredURL(for: .instagram, settings: .default), profile)
+
+        store.save(reel, for: .instagram)
+        XCTAssertNil(store.restoredURL(for: .instagram, settings: .default))
     }
 
     func testClipboardWebURLValidation() throws {

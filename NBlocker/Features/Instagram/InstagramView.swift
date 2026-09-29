@@ -32,16 +32,13 @@ struct PlatformBrowserView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            WebView(model: model)
+            WebView(model: model, browserMenuVisible: showsBrowserMenu)
                 .ignoresSafeArea()
                 .opacity(isReady ? 1 : 0)
                 .allowsHitTesting(isReady && !showsBrowserMenu)
                 .accessibilityIdentifier("browser.webView")
 
-            if isReady {
-                browserChrome
-                    .transition(.opacity)
-            } else {
+            if !isReady {
                 BrowserLaunchView(
                     platform: model.platform,
                     presentation: model.state.presentation,
@@ -49,6 +46,12 @@ struct PlatformBrowserView: View {
                     close: closeBrowser
                 )
                 .transition(.opacity)
+            }
+        }
+        .overlay {
+            if isReady {
+                browserChrome
+                    .transition(.opacity)
             }
         }
         .tint(model.platform.accentColor)
@@ -76,6 +79,7 @@ struct PlatformBrowserView: View {
             Text("NBlocker filters only the supported platform website.")
         }
         .sheet(isPresented: $showsSettings, onDismiss: {
+            model.clearMessage()
             model.update(settings: environment.settings.values)
         }) {
             switch model.platform {
@@ -89,7 +93,7 @@ struct PlatformBrowserView: View {
                 }
             }
         }
-        .sheet(isPresented: $showsAccounts) {
+        .sheet(isPresented: $showsAccounts, onDismiss: { model.clearMessage() }) {
             InstagramAccountSwitcherView {
                 InstagramAccountManager().openAccountManagement(in: model)
             }
@@ -108,14 +112,12 @@ struct PlatformBrowserView: View {
             let menuPosition = browserMenuPosition(near: buttonPosition, in: proxy)
 
             ZStack {
-                if showsBrowserMenu {
-                    Color.black.opacity(0.30)
-                        .ignoresSafeArea()
-                        .contentShape(Rectangle())
-                        .onTapGesture { setBrowserMenu(false) }
-                        .transition(.opacity)
-                        .zIndex(10)
-                }
+                Color.black.opacity(showsBrowserMenu ? 0.30 : 0)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .allowsHitTesting(showsBrowserMenu)
+                    .onTapGesture { setBrowserMenu(false) }
+                    .zIndex(10)
 
                 VStack(spacing: NBSpacing.small) {
                     if model.platform == .instagram {

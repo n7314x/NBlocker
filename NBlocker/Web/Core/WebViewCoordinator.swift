@@ -14,7 +14,12 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WK
         decidePolicyFor navigationAction: WKNavigationAction
     ) async -> WKNavigationActionPolicy {
         guard let url = navigationAction.request.url, let model else { return .cancel }
-        switch model.navigationDisposition(for: url) {
+        let context = NavigationContext(
+            isMainFrame: navigationAction.targetFrame?.isMainFrame ?? true,
+            isUserInitiated: navigationAction.navigationType == .linkActivated ||
+                navigationAction.navigationType == .formSubmitted
+        )
+        switch model.navigationDisposition(for: url, context: context) {
         case .allow:
             return .allow
         case let .redirect(url):
@@ -22,6 +27,9 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WK
             return .cancel
         case let .block(reason):
             model.didBlockNavigation(reason: reason)
+            return .cancel
+        case .cancelSilently:
+            model.didCancelBackgroundNavigation()
             return .cancel
         case .requestExternalOpen:
             model.pendingExternalURL = url
@@ -66,7 +74,15 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WK
         guard navigationAction.targetFrame == nil, let url = navigationAction.request.url else {
             return nil
         }
-        model?.handleNewWindowRequest(url, in: webView)
+        model?.handleNewWindowRequest(
+            url,
+            context: NavigationContext(
+                isMainFrame: true,
+                isUserInitiated: navigationAction.navigationType == .linkActivated ||
+                    navigationAction.navigationType == .formSubmitted
+            ),
+            in: webView
+        )
         return nil
     }
 

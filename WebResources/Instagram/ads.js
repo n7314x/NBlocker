@@ -31,10 +31,11 @@
     scan(root);
     const currentFeedAds = connected(feedAds);
     const currentStoryAds = connected(storyAds);
-    if (runtime.config.hideSponsoredPosts) {
+    const filteringEnabled = Boolean(runtime.config.filteringEnabled);
+    if (filteringEnabled && runtime.config.hideSponsoredPosts) {
       for (const ad of currentFeedAds) runtime.hide(ad, "instagram.feed.ads");
     }
-    if (runtime.config.hideStoryAds) {
+    if (filteringEnabled && runtime.config.hideStoryAds) {
       for (const ad of currentStoryAds) runtime.hide(ad, "instagram.story.ads");
     }
     const all = new Set([...currentFeedAds, ...currentStoryAds]);

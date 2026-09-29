@@ -47,6 +47,24 @@
   window.NBlocker = {
     platform: "unknown",
     config: Object.freeze({ ...(window.__NBLOCKER_CONFIG__ || {}) }),
+    updateConfig(nextConfig) {
+      if (!nextConfig || typeof nextConfig !== "object" || Array.isArray(nextConfig)) return false;
+      window.__NBLOCKER_CONFIG__ = { ...nextConfig };
+      this.config = Object.freeze({ ...nextConfig });
+      document.documentElement?.classList.toggle(
+        "nblocker-reduce-motion",
+        Boolean(this.config.filteringEnabled && this.config.reduceWebMotion)
+      );
+      return true;
+    },
+    reapplyRules() {
+      for (const element of document.querySelectorAll?.("[data-nblocker-hidden]") || []) {
+        delete element.dataset.nblockerHidden;
+      }
+      lastMetricsSignature = "";
+      apply(document);
+      return true;
+    },
     register(id, rule) {
       if (typeof id !== "string" || typeof rule !== "function") return;
       rules.set(id, rule);

@@ -38,10 +38,11 @@
     scan(root);
     const currentPosts = connected(posts);
     const currentAccounts = connected(accountModules);
-    if (runtime.config.hideSuggestedPosts) {
+    const filteringEnabled = Boolean(runtime.config.filteringEnabled);
+    if (filteringEnabled && runtime.config.hideSuggestedPosts) {
       for (const post of currentPosts) runtime.hide(post, "instagram.feed.suggestions");
     }
-    if (runtime.config.hideRecommendedAccounts) {
+    if (filteringEnabled && runtime.config.hideRecommendedAccounts) {
       for (const module of currentAccounts) runtime.hide(module, "instagram.feed.accounts");
     }
 

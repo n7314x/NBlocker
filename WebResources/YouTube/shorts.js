@@ -4,6 +4,7 @@
   if (!runtime) return;
 
   runtime.register("youtube.shorts.entries", (root) => {
+    if (!runtime.config.filteringEnabled) return;
     if (runtime.config.hideShortsTab) {
       const links = root.querySelectorAll?.('ytm-pivot-bar-item-renderer a[href^="/shorts"], nav a[href^="/shorts"], a[aria-label="Shorts" i]') || [];
       for (const link of links) {

@@ -10,7 +10,7 @@ Legend: **M1** implemented in the first milestone, **Next** designed but incompl
 | Browser | Persistent sessions, navigation, reload, home, external link, settings | M1 |
 | Instagram | Hide Reels/Stories entries, block Reel routes, hide Explore/suggestions | M1 |
 | YouTube | Hide Shorts entries/shelves, block Shorts/search routes, hide recommendations | M1 |
-| Settings | Local Codable persistence and rule reload | M1 |
+| Settings | Local Codable persistence and live rule reapplication | M1 |
 | Activity | App-contained sessions and local daily/weekly aggregates | M1 |
 | Protection | Honest Screen Time capability status and planned controls | M1 |
 | Icons | Official alternate-icon API and empty asset slots | M1 infrastructure; artwork needed |

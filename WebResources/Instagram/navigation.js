@@ -8,6 +8,7 @@
     const anchor = event.target instanceof Element ? event.target.closest("a[href]") : null;
     if (!anchor) return;
     try {
+      if (!runtime.config.filteringEnabled) return;
       const url = new URL(anchor.href, location.href);
       const isReel = /^\/(reel|reels)(\/|$)/i.test(url.pathname);
       const isCurrentlyViewingReel = /^\/(reel|reels)(\/|$)/i.test(location.pathname);

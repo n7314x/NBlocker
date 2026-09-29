@@ -31,16 +31,19 @@ SwiftUI features -> observable app environment -> local stores
 `AppEnvironment` is a `@MainActor @Observable` composition object injected through
 SwiftUI's environment. It owns stores, the usage tracker, and capability service.
 Views edit value-type settings through the store; the store encodes each model as a
-single version-tolerant Codable value in `UserDefaults`. Browser view models snapshot
-enabled rules whenever a browser opens or settings are reloaded. WebKit's default
-persistent website data store preserves site sessions without NBlocker handling
-credentials.
+single version-tolerant Codable value in `UserDefaults`. Browser view models install
+the platform rule runtime at launch and send changed configuration into the current
+document without rebuilding or reloading the web view. WebKit's default persistent
+website data store preserves site sessions without NBlocker handling credentials.
+The browser model owns its live `WKWebView`, allowing SwiftUI sheet presentation and
+representable lifecycle changes to reuse the same page, history, and JavaScript state.
 
 ## Rule engine
 
-Each rule has a stable ID, platform, resource name, injection time, and a settings
-predicate. Platform-specific providers select Instagram and YouTube rules;
-`RuleEngine` composes them with shared rules and loads UTF-8 resources.
+Each rule has a stable ID, platform, resource name, and injection time. Platform
+providers install the complete dormant-capable runtime so a setting can be enabled
+or disabled in the current document; `RuleEngine` composes it with shared rules and
+loads UTF-8 resources.
 Shared bootstrap/messaging/observer scripts load before platform rules. Navigation
 guards independently classify URLs, so route blocking does not depend on DOM shape.
 

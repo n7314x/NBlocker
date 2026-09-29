@@ -1,6 +1,8 @@
 (() => {
   "use strict";
-  window.NBlocker?.register("youtube.playback.autoplay", (root) => {
+  const runtime = window.NBlocker;
+  runtime?.register("youtube.playback.autoplay", (root) => {
+    if (!runtime.config.filteringEnabled || !runtime.config.disableAutoplay) return;
     for (const media of root.querySelectorAll?.("video[autoplay], audio[autoplay]") || []) {
       media.autoplay = false;
       media.removeAttribute("autoplay");

@@ -8,6 +8,7 @@
   ]);
 
   runtime.register("instagram.search.results", (root) => {
+    if (!runtime.config.filteringEnabled) return;
     if (!location.pathname.startsWith("/explore")) return;
     const links = root.querySelectorAll?.('main a[href^="/"]') || [];
     for (const link of links) {

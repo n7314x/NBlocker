@@ -4,6 +4,7 @@
   if (!runtime) return;
 
   runtime.register("youtube.search.suggestions", (root) => {
+    if (!runtime.config.filteringEnabled || !runtime.config.hideSearchSuggestions) return;
     const selectors = [
       "ytm-search-suggestions-section",
       "ytm-search-suggestion-renderer",

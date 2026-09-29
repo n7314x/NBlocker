@@ -4,7 +4,7 @@
   if (!runtime) return;
 
   runtime.register("youtube.watch.recommendations", (root) => {
-    if (location.pathname !== "/watch") return;
+    if (!runtime.config.filteringEnabled || location.pathname !== "/watch") return;
 
     if (runtime.config.hideRelatedVideos) {
       const selectors = [

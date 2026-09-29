@@ -1,8 +1,10 @@
 # Instagram filters
 
 Resources load in this order: shared bootstrap, messaging, DOM observer, Instagram
-bootstrap, base stylesheet, then enabled feature rules. A single observer batches DOM
-changes and targets affected subtrees; feature rules do not each create polling timers.
+bootstrap, base stylesheet, then feature rules. Rules remain dormant when their
+setting is off so configuration changes can be applied to the live document without
+a reload. A single observer batches DOM changes and targets affected subtrees;
+feature rules do not each create polling timers.
 
 Initial rules:
 
@@ -19,11 +21,12 @@ Initial rules:
 | `instagram.appearance.grayscale` | `grayscale.js` | Apply selected grayscale scope |
 
 Rules prefer stable URL patterns, roles, and accessible labels over generated class
-names. Every hidden element is marked with `data-nblocker-hidden`; reloading rules
-reloads the page into a fresh document so disabled filters do not leave stale hidden
-elements. Exceptions emit only a rule ID to the native bridge.
+names. Every hidden element is marked with `data-nblocker-hidden`. Live configuration
+updates remove current hidden markers and then reapply enabled rules, so disabled
+filters do not leave stale hidden elements. Exceptions emit only a rule ID to the
+native bridge.
 
-The ad and suggestion rules remain installed while filtering is enabled so the
-native metrics strip can show real current-document counts. They report only numeric
-counts. The native “Block these” action invokes an in-page action that marks the
-currently detected containers with the same local hidden attribute.
+The ad and suggestion rules remain installed so the native metrics strip can show
+real current-document counts. They report only numeric counts. The native “Block
+these” action invokes an in-page action that marks the currently detected containers
+with the same local hidden attribute.

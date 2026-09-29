@@ -3,6 +3,27 @@ import Observation
 import UIKit
 import WebKit
 
+enum BrowserSettingsUpdate: Equatable, Sendable {
+    case noChange
+    case applyLive
+
+    static func plan(
+        for platform: Platform,
+        current: PlatformSettings,
+        updated: PlatformSettings
+    ) -> BrowserSettingsUpdate {
+        switch platform {
+        case .instagram:
+            current.instagram == updated.instagram ? .noChange : .applyLive
+        case .youtube:
+            current.youtube == updated.youtube ? .noChange : .applyLive
+        }
+    }
+
+    var requestsReload: Bool { false }
+    var navigationTarget: URL? { nil }
+}
+
 @MainActor
 @Observable
 final class WebViewModel {
@@ -11,10 +32,11 @@ final class WebViewModel {
     private(set) var state = BrowserState()
     var pendingExternalURL: URL?
 
-    @ObservationIgnored private(set) weak var webView: WKWebView?
+    @ObservationIgnored private(set) var webView: WKWebView?
     @ObservationIgnored private var settings: PlatformSettings
     @ObservationIgnored private let ruleEngine: RuleEngine
     @ObservationIgnored private let usageTracker: UsageTracker
+    @ObservationIgnored private let browserSessionStore: BrowserSessionStore
     @ObservationIgnored private let minimumPreparationDuration: TimeInterval
     @ObservationIgnored private var preparationStartedAt = Date.now
     @ObservationIgnored private var presentationTask: Task<Void, Never>?
@@ -24,6 +46,7 @@ final class WebViewModel {
         settings: PlatformSettings,
         ruleEngine: RuleEngine = RuleEngine(),
         usageTracker: UsageTracker,
+        browserSessionStore: BrowserSessionStore = BrowserSessionStore(),
         minimumPreparationDuration: TimeInterval = 0.7
     ) {
         self.platform = platform
@@ -31,6 +54,7 @@ final class WebViewModel {
         self.settings = settings
         self.ruleEngine = ruleEngine
         self.usageTracker = usageTracker
+        self.browserSessionStore = browserSessionStore
         self.minimumPreparationDuration = minimumPreparationDuration
     }
 
@@ -69,9 +93,10 @@ final class WebViewModel {
     }
 
     func attach(_ webView: WKWebView) {
+        guard self.webView !== webView else { return }
         self.webView = webView
         beginPreparation()
-        loadHome()
+        loadInitialPage()
         usageTracker.begin(platform: platform)
     }
 
@@ -104,6 +129,8 @@ final class WebViewModel {
             load(secureURL)
         case let .block(reason):
             didBlockNavigation(reason: reason)
+        case .cancelSilently:
+            break
         case .requestExternalOpen:
             pendingExternalURL = url
         }
@@ -122,17 +149,41 @@ final class WebViewModel {
         return true
     }
 
-    func update(settings: PlatformSettings) {
-        self.settings = settings
-        guard let controller = webView?.configuration.userContentController else { return }
+    @discardableResult
+    func update(settings newSettings: PlatformSettings) -> BrowserSettingsUpdate {
+        let update = settingsUpdate(for: newSettings)
+        settings = newSettings
+        guard update == .applyLive else { return .noChange }
+        guard let webView else { return .applyLive }
         do {
-            try ruleEngine.install(platform: platform, settings: settings, into: controller)
-            beginPreparation()
-            webView?.reload()
+            let json = try ruleEngine.configurationJSON(platform: platform, settings: settings)
+            do {
+                try ruleEngine.install(
+                    platform: platform,
+                    settings: settings,
+                    into: webView.configuration.userContentController
+                )
+            } catch {
+                AppLogger.logger(.rules).error("Future rule update failed: \(error.localizedDescription, privacy: .public)")
+            }
+            let source = """
+            (() => {
+              const config = \(json);
+              if (!window.NBlocker?.updateConfig(config)) return false;
+              return window.NBlocker.reapplyRules();
+            })();
+            """
+            Task { @MainActor [weak webView] in
+                do {
+                    _ = try await webView?.evaluateJavaScript(source)
+                } catch {
+                    AppLogger.logger(.rules).error("Live rule update failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
         } catch {
-            state.message = "Rules could not be reloaded. The current page remains usable."
-            AppLogger.logger(.rules).error("Rule reload failed: \(error.localizedDescription, privacy: .public)")
+            AppLogger.logger(.rules).error("Rule configuration encoding failed: \(error.localizedDescription, privacy: .public)")
         }
+        return .applyLive
     }
 
     func clearMessage() { state.message = nil }
@@ -162,18 +213,31 @@ final class WebViewModel {
         usageTracker.begin(platform: platform)
     }
 
-    func navigationDisposition(for url: URL) -> NavigationDisposition {
-        NavigationGuard(platform: platform).disposition(for: url, settings: settings)
+    func navigationDisposition(
+        for url: URL,
+        context: NavigationContext = .explicitRequest
+    ) -> NavigationDisposition {
+        NavigationGuard(platform: platform).disposition(for: url, settings: settings, context: context)
     }
 
-    func handleNewWindowRequest(_ url: URL, in webView: WKWebView) {
-        switch navigationDisposition(for: url) {
+    func handleNewWindowRequest(
+        _ url: URL,
+        context: NavigationContext,
+        in webView: WKWebView
+    ) {
+        if !context.isUserInitiated || URLHelpers.isHarmlessInternalURL(url) {
+            didCancelBackgroundNavigation()
+            return
+        }
+        switch navigationDisposition(for: url, context: context) {
         case .allow:
             webView.load(URLRequest(url: url))
         case let .redirect(secureURL):
             webView.load(URLRequest(url: secureURL))
         case let .block(reason):
             didBlockNavigation(reason: reason)
+        case .cancelSilently:
+            didCancelBackgroundNavigation()
         case .requestExternalOpen:
             pendingExternalURL = url
         }
@@ -182,6 +246,10 @@ final class WebViewModel {
     func didBlockNavigation(reason: String) {
         state.message = reason
         usageTracker.recordPreventedNavigation()
+    }
+
+    func didCancelBackgroundNavigation() {
+        AppLogger.logger(.web).debug("Ignored non-user-visible browser navigation")
     }
 
     func didStartNavigation(_ webView: WKWebView) {
@@ -196,12 +264,16 @@ final class WebViewModel {
 
     func didCommitNavigation(_ webView: WKWebView) {
         sync(from: webView)
+        state.message = nil
+        saveRestorableURL(from: webView)
     }
 
     func didFinishNavigation(_ webView: WKWebView) {
         sync(from: webView)
         state.isLoading = false
         state.estimatedProgress = 1
+        state.message = nil
+        saveRestorableURL(from: webView)
         completePreparation(with: .ready)
     }
 
@@ -283,6 +355,20 @@ final class WebViewModel {
         state.message = nil
         state.estimatedProgress = 0
         state.metrics = BrowserMetrics()
+    }
+
+    func settingsUpdate(for newSettings: PlatformSettings) -> BrowserSettingsUpdate {
+        BrowserSettingsUpdate.plan(for: platform, current: settings, updated: newSettings)
+    }
+
+    private func loadInitialPage() {
+        let initialURL = browserSessionStore.restoredURL(for: platform, settings: settings) ?? homeURL
+        webView?.load(URLRequest(url: initialURL))
+    }
+
+    private func saveRestorableURL(from webView: WKWebView) {
+        guard let url = webView.url else { return }
+        browserSessionStore.save(url, for: platform)
     }
 
     private func completePreparation(with presentation: BrowserPresentationState) {

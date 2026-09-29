@@ -43,14 +43,17 @@ struct RuleEngine {
         settings: PlatformSettings,
         into controller: WKUserContentController
     ) throws {
-        controller.removeAllUserScripts()
-        controller.addUserScript(ScriptInjector.userScript(
+        var scripts = [ScriptInjector.userScript(
             source: try configurationSource(platform: platform, settings: settings),
             injectionTime: .documentStart
-        ))
+        )]
         for rule in enabledRules(for: platform, settings: settings) {
             let source = try source(for: rule)
-            controller.addUserScript(ScriptInjector.userScript(source: source, injectionTime: rule.injectionTime))
+            scripts.append(ScriptInjector.userScript(source: source, injectionTime: rule.injectionTime))
+        }
+        controller.removeAllUserScripts()
+        for script in scripts {
+            controller.addUserScript(script)
         }
     }
 
@@ -74,7 +77,7 @@ struct RuleEngine {
         return rule.kind == .style ? StyleInjector.script(for: raw, identifier: rule.id) : raw
     }
 
-    private func configurationSource(platform: Platform, settings: PlatformSettings) throws -> String {
+    func configurationJSON(platform: Platform, settings: PlatformSettings) throws -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let data: Data
@@ -85,6 +88,10 @@ struct RuleEngine {
         guard let json = String(data: data, encoding: .utf8) else {
             throw RuleEngineError.unreadableResource("generated configuration")
         }
-        return "window.__NBLOCKER_CONFIG__ = \(json);"
+        return json
+    }
+
+    private func configurationSource(platform: Platform, settings: PlatformSettings) throws -> String {
+        "window.__NBLOCKER_CONFIG__ = \(try configurationJSON(platform: platform, settings: settings));"
     }
 }
