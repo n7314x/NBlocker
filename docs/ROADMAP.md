@@ -14,6 +14,7 @@ an unchecked item is not silently represented as complete in the UI.
 - [x] Instagram and YouTube settings sheets
 - [x] version-tolerant persistent settings, routine, and usage models
 - [x] WebKit browser infrastructure and floating native toolbar
+- [x] Instagram preference-loading transition, browser control menu, metrics, and retry UI
 - [x] route classification, HTTPS upgrades, authentication hosts, and navigation blocking
 - [x] modular Instagram and YouTube filtering resources
 - [x] session usage tracking, interrupted-session recovery, and local aggregation
@@ -28,9 +29,9 @@ an unchecked item is not silently represented as complete in the UI.
 
 - [ ] fixture-driven DOM rule tests and selector health diagnostics
 - [ ] Single Reel/Short allow-once flows for explicitly shared links
-- [~] DMs-only navigation filtering and inbox route; account switching UX remains
+- [~] DMs-only navigation filtering, inbox route, and native handoff to Instagram's account management are active
 - [~] schedule model and active selection; editor, conflicts, and application engine remain
-- [ ] scroll reminders with time and measurable-content triggers
+- [~] Instagram time/post reminders are active; YouTube and richer reminder UX remain
 - [~] privacy-safe OSLog rule errors exist; an in-app diagnostics surface remains
 
 ## Milestone 3 — provisioned system protection

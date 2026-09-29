@@ -41,6 +41,9 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(instagram.waitForExistence(timeout: 5))
         XCTAssertTrue(instagram.isHittable)
         instagram.tap()
+        XCTAssertTrue(element("browser.instagram").waitForExistence(timeout: 2))
+        XCTAssertTrue(element("browser.webView").waitForExistence(timeout: 2))
+        XCTAssertTrue(element("browser.loading").waitForExistence(timeout: 1))
         closeBrowser()
 
         carousel.swipeLeft()
@@ -67,14 +70,26 @@ final class NavigationUITests: XCTestCase {
     }
 
     private func assertScreen(_ identifier: String) {
-        let screen = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        let screen = element(identifier)
         XCTAssertTrue(screen.waitForExistence(timeout: 5), "Missing screen \(identifier)")
     }
 
+    private func element(_ identifier: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
     private func closeBrowser() {
-        let close = app.buttons["Close browser"]
-        XCTAssertTrue(close.waitForExistence(timeout: 5))
-        close.tap()
+        let launchClose = app.buttons["Close browser"]
+        if launchClose.waitForExistence(timeout: 1) {
+            launchClose.tap()
+        } else {
+            let controls = app.buttons["Browser controls"]
+            XCTAssertTrue(controls.waitForExistence(timeout: 8))
+            controls.tap()
+            let close = app.buttons["Close"]
+            XCTAssertTrue(close.waitForExistence(timeout: 2))
+            close.tap()
+        }
         assertScreen("screen.home")
     }
 }

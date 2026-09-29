@@ -40,6 +40,7 @@ final class SettingsStoreTests: XCTestCase {
         let restored = SettingsStore(defaults: defaults).values
         XCTAssertFalse(restored.instagram.blockReelRoutes)
         XCTAssertTrue(restored.instagram.hideReelsTab)
+        XCTAssertTrue(restored.instagram.hideStoryAds)
         XCTAssertEqual(restored.youtube, .default)
     }
 

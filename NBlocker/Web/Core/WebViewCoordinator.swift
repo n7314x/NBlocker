@@ -2,7 +2,7 @@ import Foundation
 import WebKit
 
 @MainActor
-final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     weak var model: WebViewModel?
 
     init(model: WebViewModel) {
@@ -33,6 +33,10 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKScriptMessageH
         model?.didStartNavigation(webView)
     }
 
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation?) {
+        model?.didCommitNavigation(webView)
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation?) {
         model?.didFinishNavigation(webView)
     }
@@ -42,7 +46,32 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKScriptMessageH
         didFailProvisionalNavigation navigation: WKNavigation?,
         withError error: any Error
     ) {
-        model?.didFailNavigation(webView)
+        model?.didFailNavigation(webView, error: error)
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        didFail navigation: WKNavigation?,
+        withError error: any Error
+    ) {
+        model?.didFailNavigation(webView, error: error)
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        createWebViewWith configuration: WKWebViewConfiguration,
+        for navigationAction: WKNavigationAction,
+        windowFeatures: WKWindowFeatures
+    ) -> WKWebView? {
+        guard navigationAction.targetFrame == nil, let url = navigationAction.request.url else {
+            return nil
+        }
+        model?.handleNewWindowRequest(url, in: webView)
+        return nil
+    }
+
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        model?.webContentProcessDidTerminate()
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

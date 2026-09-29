@@ -15,6 +15,7 @@ struct InstagramSettings: Codable, Equatable, Sendable {
     var disableReelAutoplay = true
     var muteReelMedia = false
     var hideStories = false
+    var hideStoryAds = true
     var hideExplore = true
     var allowAccountSearch = true
     var blockPostSearch = false
@@ -35,7 +36,7 @@ struct InstagramSettings: Codable, Equatable, Sendable {
         case filteringEnabled, hideFeed, hideSuggestedPosts, hideSponsoredPosts
         case hideRecommendedAccounts, hideReelsTab, hideReelsInFeed, hideReelsOnProfiles
         case blockReelRoutes, allowSharedReel, blockReelChaining, disableReelAutoplay
-        case muteReelMedia, hideStories, hideExplore, allowAccountSearch, blockPostSearch
+        case muteReelMedia, hideStories, hideStoryAds, hideExplore, allowAccountSearch, blockPostSearch
         case messagesOnly, openToInbox, allowSharedMedia, allowProfiles, hideLikeCounts
         case grayscale, grayscaleMediaOnly, reduceWebMotion
         case scrollReminderMinutes, scrollReminderPosts
@@ -57,6 +58,7 @@ struct InstagramSettings: Codable, Equatable, Sendable {
         disableReelAutoplay = values.decode(Bool.self, forKey: .disableReelAutoplay, default: true)
         muteReelMedia = values.decode(Bool.self, forKey: .muteReelMedia, default: false)
         hideStories = values.decode(Bool.self, forKey: .hideStories, default: false)
+        hideStoryAds = values.decode(Bool.self, forKey: .hideStoryAds, default: true)
         hideExplore = values.decode(Bool.self, forKey: .hideExplore, default: true)
         allowAccountSearch = values.decode(Bool.self, forKey: .allowAccountSearch, default: true)
         blockPostSearch = values.decode(Bool.self, forKey: .blockPostSearch, default: false)

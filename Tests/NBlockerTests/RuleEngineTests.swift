@@ -11,7 +11,18 @@ final class RuleEngineTests: XCTestCase {
         let ids = Set(RuleEngine().enabledRules(for: .instagram, settings: settings).map(\.id))
         XCTAssertTrue(ids.contains("instagram.reels.entries"))
         XCTAssertFalse(ids.contains("instagram.explore.entries"))
-        XCTAssertFalse(ids.contains("instagram.feed.suggestions"))
+        XCTAssertTrue(ids.contains("instagram.feed.suggestions"), "Detection remains active for browser metrics")
+        XCTAssertTrue(ids.contains("instagram.feed.ads"), "Ad detection remains active for browser metrics")
+    }
+
+    func testInstagramOptionalRulesMatchSettings() {
+        var settings = PlatformSettings.default
+        settings.instagram.blockPostSearch = true
+        settings.instagram.scrollReminderPosts = 20
+        let ids = Set(RuleEngine().enabledRules(for: .instagram, settings: settings).map(\.id))
+
+        XCTAssertTrue(ids.contains("instagram.search.results"))
+        XCTAssertTrue(ids.contains("instagram.scroll.reminders"))
     }
 
     func testYouTubeRuleSelection() {
@@ -116,5 +127,22 @@ final class RuleEngineTests: XCTestCase {
         )
         XCTAssertNil(WebMessageHandler.event(from: ["event": "navigationPrevented", "route": "unknown"]))
         XCTAssertNil(WebMessageHandler.event(from: ["event": "scroll", "direction": "sideways"]))
+        XCTAssertEqual(
+            WebMessageHandler.event(from: ["event": "metrics", "ads": 2, "suggested": 7, "blockable": 3]),
+            .metrics(ads: 2, suggested: 7, blockable: 3)
+        )
+        XCTAssertNil(WebMessageHandler.event(from: ["event": "metrics", "ads": -1, "suggested": 0, "blockable": 0]))
+        XCTAssertEqual(
+            WebMessageHandler.event(from: ["event": "scrollReminder", "kind": "posts"]),
+            .scrollReminder(kind: .posts)
+        )
+    }
+
+    func testBrowserSessionElapsedText() {
+        let openedAt = Date(timeIntervalSince1970: 1_000)
+        let session = BrowserSession(platform: .instagram, openedAt: openedAt)
+
+        XCTAssertEqual(session.elapsedText(at: openedAt.addingTimeInterval(96)), "01:36")
+        XCTAssertEqual(session.elapsedText(at: openedAt.addingTimeInterval(3_661)), "1:01:01")
     }
 }

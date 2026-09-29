@@ -16,9 +16,10 @@ struct InstagramRuleProvider: Sendable {
         if settings.hideExplore {
             rules.append(DOMRule(id: "instagram.explore.entries", platform: .instagram, relativePath: "Instagram/explore.js"))
         }
-        if settings.hideSuggestedPosts || settings.hideSponsoredPosts || settings.hideRecommendedAccounts {
-            rules.append(DOMRule(id: "instagram.feed.suggestions", platform: .instagram, relativePath: "Instagram/suggested-posts.js"))
-        }
+        // These rules also provide the privacy-safe counts shown in browser chrome,
+        // so keep them installed even when automatic hiding is disabled.
+        rules.append(DOMRule(id: "instagram.feed.suggestions", platform: .instagram, relativePath: "Instagram/suggested-posts.js"))
+        rules.append(DOMRule(id: "instagram.feed.ads", platform: .instagram, relativePath: "Instagram/ads.js"))
         if settings.hideFeed {
             rules.append(DOMRule(id: "instagram.feed.hidden", platform: .instagram, relativePath: "Instagram/feed.js"))
         }
@@ -28,8 +29,14 @@ struct InstagramRuleProvider: Sendable {
         if settings.hideStories {
             rules.append(DOMRule(id: "instagram.stories.entries", platform: .instagram, relativePath: "Instagram/stories.js"))
         }
+        if settings.blockPostSearch || !settings.allowAccountSearch {
+            rules.append(DOMRule(id: "instagram.search.results", platform: .instagram, relativePath: "Instagram/search.js"))
+        }
         if settings.grayscale || settings.grayscaleMediaOnly {
             rules.append(DOMRule(id: "instagram.appearance.grayscale", platform: .instagram, relativePath: "Instagram/grayscale.js"))
+        }
+        if settings.scrollReminderMinutes != nil || settings.scrollReminderPosts != nil {
+            rules.append(DOMRule(id: "instagram.scroll.reminders", platform: .instagram, relativePath: "Instagram/scroll-reminders.js"))
         }
         return rules
     }

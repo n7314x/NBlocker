@@ -18,6 +18,7 @@ struct WebView: UIViewRepresentable {
         configuration.userContentController.add(context.coordinator, name: "nblocker")
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
         webView.isOpaque = false
         webView.backgroundColor = .black
@@ -31,5 +32,6 @@ struct WebView: UIViewRepresentable {
     static func dismantleUIView(_ webView: WKWebView, coordinator: WebViewCoordinator) {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "nblocker")
         webView.navigationDelegate = nil
+        webView.uiDelegate = nil
     }
 }

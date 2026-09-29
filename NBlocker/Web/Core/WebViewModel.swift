@@ -7,25 +7,31 @@ import WebKit
 @Observable
 final class WebViewModel {
     let platform: Platform
+    let session: BrowserSession
     private(set) var state = BrowserState()
     var pendingExternalURL: URL?
-    var isToolbarVisible = true
 
     @ObservationIgnored private(set) weak var webView: WKWebView?
     @ObservationIgnored private var settings: PlatformSettings
     @ObservationIgnored private let ruleEngine: RuleEngine
     @ObservationIgnored private let usageTracker: UsageTracker
+    @ObservationIgnored private let minimumPreparationDuration: TimeInterval
+    @ObservationIgnored private var preparationStartedAt = Date.now
+    @ObservationIgnored private var presentationTask: Task<Void, Never>?
 
     init(
         platform: Platform,
         settings: PlatformSettings,
         ruleEngine: RuleEngine = RuleEngine(),
-        usageTracker: UsageTracker
+        usageTracker: UsageTracker,
+        minimumPreparationDuration: TimeInterval = 0.7
     ) {
         self.platform = platform
+        self.session = BrowserSession(platform: platform)
         self.settings = settings
         self.ruleEngine = ruleEngine
         self.usageTracker = usageTracker
+        self.minimumPreparationDuration = minimumPreparationDuration
     }
 
     var homeURL: URL {
@@ -39,11 +45,21 @@ final class WebViewModel {
         }
     }
 
+    var isFilteringEnabled: Bool {
+        switch platform {
+        case .instagram: settings.instagram.filteringEnabled
+        case .youtube: settings.youtube.filteringEnabled
+        }
+    }
+
     func configure(_ configuration: WKWebViewConfiguration) throws {
         configuration.websiteDataStore = .default()
         configuration.allowsInlineMediaPlayback = true
         configuration.allowsPictureInPictureMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        configuration.defaultWebpagePreferences.preferredContentMode = .mobile
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
         try ruleEngine.install(
             platform: platform,
             settings: settings,
@@ -53,6 +69,7 @@ final class WebViewModel {
 
     func attach(_ webView: WKWebView) {
         self.webView = webView
+        beginPreparation()
         loadHome()
         usageTracker.begin(platform: platform)
     }
@@ -65,11 +82,25 @@ final class WebViewModel {
     func goForward() { webView?.goForward() }
     func reload() { webView?.reload() }
 
+    func retry() {
+        beginPreparation()
+        if webView?.url == nil {
+            loadHome()
+        } else {
+            webView?.reload()
+        }
+    }
+
+    func load(_ url: URL) {
+        webView?.load(URLRequest(url: url))
+    }
+
     func update(settings: PlatformSettings) {
         self.settings = settings
         guard let controller = webView?.configuration.userContentController else { return }
         do {
             try ruleEngine.install(platform: platform, settings: settings, into: controller)
+            beginPreparation()
             webView?.reload()
         } catch {
             state.message = "Rules could not be reloaded. The current page remains usable."
@@ -78,6 +109,12 @@ final class WebViewModel {
     }
 
     func clearMessage() { state.message = nil }
+
+    func copyCurrentURL() {
+        guard let url = state.currentURL else { return }
+        UIPasteboard.general.url = url
+        state.message = "Link copied"
+    }
 
     func openCurrentURLExternally() {
         guard let url = state.currentURL else { return }
@@ -102,26 +139,63 @@ final class WebViewModel {
         NavigationGuard(platform: platform).disposition(for: url, settings: settings)
     }
 
+    func handleNewWindowRequest(_ url: URL, in webView: WKWebView) {
+        switch navigationDisposition(for: url) {
+        case .allow:
+            webView.load(URLRequest(url: url))
+        case let .redirect(secureURL):
+            webView.load(URLRequest(url: secureURL))
+        case let .block(reason):
+            didBlockNavigation(reason: reason)
+        case .requestExternalOpen:
+            pendingExternalURL = url
+        }
+    }
+
     func didBlockNavigation(reason: String) {
         state.message = reason
         usageTracker.recordPreventedNavigation()
     }
 
     func didStartNavigation(_ webView: WKWebView) {
+        if case .preparing = state.presentation {
+            presentationTask?.cancel()
+        }
         sync(from: webView)
         state.isLoading = true
+        state.estimatedProgress = max(webView.estimatedProgress, 0.05)
+        state.metrics = BrowserMetrics()
+    }
+
+    func didCommitNavigation(_ webView: WKWebView) {
+        sync(from: webView)
     }
 
     func didFinishNavigation(_ webView: WKWebView) {
         sync(from: webView)
         state.isLoading = false
         state.estimatedProgress = 1
+        completePreparation(with: .ready)
     }
 
-    func didFailNavigation(_ webView: WKWebView) {
+    func didFailNavigation(_ webView: WKWebView, error: any Error) {
         sync(from: webView)
         state.isLoading = false
-        state.message = "The page could not load. Check your connection and try again."
+        guard (error as NSError).code != NSURLErrorCancelled else { return }
+        let message = "Check your connection and try again."
+        if case .preparing = state.presentation {
+            completePreparation(with: .failed(message: message))
+        } else {
+            state.message = "The page could not load. Check your connection and try again."
+        }
+    }
+
+    func webContentProcessDidTerminate() {
+        if case .preparing = state.presentation {
+            completePreparation(with: .failed(message: "The browser stopped unexpectedly. Please try again."))
+        } else {
+            state.message = "The browser stopped unexpectedly. Reload to continue."
+        }
     }
 
     func sync(from webView: WKWebView) {
@@ -143,8 +217,57 @@ final class WebViewModel {
             else { return }
             usageTracker.recordPreventedNavigation()
             state.message = platform == .instagram ? "Reels are blocked by your settings" : "Shorts are blocked by your settings"
-        case let .scroll(direction):
-            isToolbarVisible = direction != .down
+        case .scroll:
+            break
+        case let .metrics(ads, suggested, blockable):
+            state.metrics = BrowserMetrics(
+                ads: ads,
+                suggested: suggested,
+                blockable: blockable,
+                hasReport: true
+            )
+        case .scrollReminder:
+            usageTracker.recordReminder()
+            state.message = "Take a breath. You have been scrolling for a while."
+        }
+    }
+
+    func blockVisibleDetections() {
+        guard let webView else { return }
+        Task { @MainActor [weak self, weak webView] in
+            guard let self, let webView else { return }
+            do {
+                let result = try await webView.evaluateJavaScript(
+                    "window.NBlocker?.performAction('blockDetectedItems') ?? 0;"
+                )
+                let count = (result as? NSNumber)?.intValue ?? 0
+                state.message = count > 0 ? "Detected distractions hidden" : "No visible distractions to hide"
+            } catch {
+                state.message = "Those items could not be hidden on this page."
+                AppLogger.logger(.rules).error("Detected-item action failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    private func beginPreparation() {
+        presentationTask?.cancel()
+        preparationStartedAt = .now
+        state.presentation = .preparing
+        state.message = nil
+        state.estimatedProgress = 0
+        state.metrics = BrowserMetrics()
+    }
+
+    private func completePreparation(with presentation: BrowserPresentationState) {
+        presentationTask?.cancel()
+        let elapsed = Date.now.timeIntervalSince(preparationStartedAt)
+        let remaining = max(0, minimumPreparationDuration - elapsed)
+        presentationTask = Task { @MainActor [weak self] in
+            if remaining > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+            guard !Task.isCancelled else { return }
+            self?.state.presentation = presentation
         }
     }
 }
