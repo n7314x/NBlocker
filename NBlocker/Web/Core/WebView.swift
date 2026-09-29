@@ -23,6 +23,7 @@ struct WebView: UIViewRepresentable {
         webView.isOpaque = false
         webView.backgroundColor = .black
         webView.scrollView.backgroundColor = .black
+        webView.accessibilityIdentifier = "browser.webView"
         model.attach(webView)
         return webView
     }

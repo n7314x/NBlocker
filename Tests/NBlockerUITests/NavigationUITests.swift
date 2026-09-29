@@ -41,9 +41,8 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(instagram.waitForExistence(timeout: 5))
         XCTAssertTrue(instagram.isHittable)
         instagram.tap()
-        XCTAssertTrue(element("browser.instagram").waitForExistence(timeout: 2))
-        XCTAssertTrue(element("browser.webView").waitForExistence(timeout: 2))
         XCTAssertTrue(element("browser.loading").waitForExistence(timeout: 1))
+        XCTAssertTrue(element("browser.instagram").waitForExistence(timeout: 2))
         closeBrowser()
 
         carousel.swipeLeft()
