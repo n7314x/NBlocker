@@ -179,14 +179,48 @@ final class RuleEngineTests: XCTestCase {
         XCTAssertEqual(object["hideExplore"] as? Bool, false)
     }
 
-    func testMenuVisibilityDoesNotChangeBrowserViewportLayout() {
-        let closed = BrowserViewportLayout.fullScreen(browserMenuVisible: false)
-        let open = BrowserViewportLayout.fullScreen(browserMenuVisible: true)
+    func testBrowserViewportLayoutIsFixedAndHasNoMenuState() {
+        let layout = BrowserViewportLayout.fullScreen
 
-        XCTAssertEqual(closed, open)
-        XCTAssertEqual(open.contentInset, .zero)
-        XCTAssertEqual(open.scrollIndicatorInsets, .zero)
-        XCTAssertEqual(open.adjustmentBehavior, .never)
+        XCTAssertEqual(layout.contentInset, .zero)
+        XCTAssertEqual(layout.scrollIndicatorInsets, .zero)
+        XCTAssertEqual(layout.adjustmentBehavior, .never)
+    }
+
+    func testPlatformBrowserDoesNotPassMenuVisibilityIntoWebView() throws {
+        let source = try repositorySource(at: "NBlocker/Features/Instagram/InstagramView.swift")
+
+        XCTAssertTrue(source.contains("WebView(model: model)"))
+        XCTAssertFalse(source.contains("browserMenuVisible"))
+    }
+
+    func testExploreRulePreservesSearchAndSeparatesDiscoveryContent() throws {
+        let source = try instagramRuleSource(id: "instagram.explore.entries")
+
+        XCTAssertTrue(InstagramSettings.default.hideExplore)
+        XCTAssertTrue(InstagramSettings.default.allowAccountSearch)
+        XCTAssertFalse(InstagramSettings.default.blockPostSearch)
+        XCTAssertTrue(source.contains("if (navigation?.isSearchControl(entry)) continue"))
+        XCTAssertTrue(source.contains("instagram.explore.discovery"))
+        XCTAssertTrue(source.contains("if (!isExploreLanding || hasSearchRoute) return"))
+        XCTAssertTrue(source.contains("if (hasSearchText) return"))
+    }
+
+    func testReelNavigationUsesSafeItemWrapperHiding() throws {
+        let source = try instagramRuleSource(id: "instagram.reels.entries")
+
+        XCTAssertTrue(source.contains("instagramNavigation?.hideItem(anchor"))
+        XCTAssertTrue(source.contains("instagram.reels.tab"))
+    }
+
+    func testInstagramNavigationCompactionResourceAndStylesAreIncluded() throws {
+        let navigation = try instagramRuleSource(id: "instagram.navigation")
+        let styles = try instagramRuleSource(id: "instagram.style")
+
+        XCTAssertTrue(navigation.contains("nblockerCompactNav"))
+        XCTAssertTrue(navigation.contains("nblockerNavItem"))
+        XCTAssertTrue(styles.contains("data-nblocker-compact-nav"))
+        XCTAssertTrue(styles.contains("flex: 1 1 0"))
     }
 
     func testBrowserSessionRestoresSafeURLButNotBlockedReel() throws {
@@ -268,5 +302,20 @@ final class RuleEngineTests: XCTestCase {
 
         XCTAssertEqual(session.elapsedText(at: openedAt.addingTimeInterval(96)), "01:36")
         XCTAssertEqual(session.elapsedText(at: openedAt.addingTimeInterval(3_661)), "1:01:01")
+    }
+
+    private func instagramRuleSource(id: String) throws -> String {
+        let rule = try XCTUnwrap(
+            RuleEngine().enabledRules(for: .instagram, settings: .default).first { $0.id == id }
+        )
+        return try RuleEngine(bundle: .main).source(for: rule)
+    }
+
+    private func repositorySource(at relativePath: String) throws -> String {
+        let repositoryRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        return try String(contentsOf: repositoryRoot.appendingPathComponent(relativePath), encoding: .utf8)
     }
 }

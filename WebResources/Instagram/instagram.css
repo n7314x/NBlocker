@@ -1,3 +1,29 @@
 html.nblocker-grayscale { filter: grayscale(1) !important; }
 html.nblocker-media-grayscale img,
 html.nblocker-media-grayscale video { filter: grayscale(1) !important; }
+
+@media (max-width: 900px) {
+  [data-nblocker-compact-nav="true"] {
+    align-items: center !important;
+    display: flex !important;
+    justify-content: space-evenly !important;
+    width: 100% !important;
+  }
+
+  [data-nblocker-compact-nav="true"] > [data-nblocker-nav-item="true"] {
+    align-items: center !important;
+    display: flex !important;
+    flex: 1 1 0 !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+  }
+
+  [data-nblocker-compact-nav="true"] > [data-nblocker-nav-item="true"] > a,
+  [data-nblocker-compact-nav="true"] > [data-nblocker-nav-item="true"] > [role="link"],
+  [data-nblocker-compact-nav="true"] > [data-nblocker-nav-item="true"] > button {
+    align-items: center !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+}

@@ -7,14 +7,11 @@ struct BrowserViewportLayout: Equatable {
     let scrollIndicatorInsets: UIEdgeInsets
     let adjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior
 
-    static func fullScreen(browserMenuVisible: Bool) -> BrowserViewportLayout {
-        _ = browserMenuVisible
-        return BrowserViewportLayout(
-            contentInset: .zero,
-            scrollIndicatorInsets: .zero,
-            adjustmentBehavior: .never
-        )
-    }
+    static let fullScreen = BrowserViewportLayout(
+        contentInset: .zero,
+        scrollIndicatorInsets: .zero,
+        adjustmentBehavior: .never
+    )
 
     @MainActor
     func apply(to scrollView: UIScrollView) {
@@ -26,7 +23,6 @@ struct BrowserViewportLayout: Equatable {
 
 struct WebView: UIViewRepresentable {
     let model: WebViewModel
-    let browserMenuVisible: Bool
 
     func makeCoordinator() -> WebViewCoordinator {
         WebViewCoordinator(model: model)
@@ -35,7 +31,7 @@ struct WebView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         if let webView = model.webView {
             connect(webView, to: context.coordinator)
-            BrowserViewportLayout.fullScreen(browserMenuVisible: browserMenuVisible).apply(to: webView.scrollView)
+            BrowserViewportLayout.fullScreen.apply(to: webView.scrollView)
             return webView
         }
 
@@ -51,15 +47,13 @@ struct WebView: UIViewRepresentable {
         webView.isOpaque = false
         webView.backgroundColor = .black
         webView.scrollView.backgroundColor = .black
-        BrowserViewportLayout.fullScreen(browserMenuVisible: browserMenuVisible).apply(to: webView.scrollView)
+        BrowserViewportLayout.fullScreen.apply(to: webView.scrollView)
         webView.accessibilityIdentifier = "browser.webView"
         model.attach(webView)
         return webView
     }
 
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        BrowserViewportLayout.fullScreen(browserMenuVisible: browserMenuVisible).apply(to: webView.scrollView)
-    }
+    func updateUIView(_ webView: WKWebView, context: Context) {}
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: WebViewCoordinator) {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "nblocker")

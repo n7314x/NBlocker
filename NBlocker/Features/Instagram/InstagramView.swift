@@ -32,10 +32,10 @@ struct PlatformBrowserView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            WebView(model: model, browserMenuVisible: showsBrowserMenu)
+            WebView(model: model)
                 .ignoresSafeArea()
                 .opacity(isReady ? 1 : 0)
-                .allowsHitTesting(isReady && !showsBrowserMenu)
+                .allowsHitTesting(isReady)
                 .accessibilityIdentifier("browser.webView")
 
             if !isReady {
@@ -57,7 +57,6 @@ struct PlatformBrowserView: View {
         .tint(model.platform.accentColor)
         .accessibilityIdentifier("browser.\(model.platform.rawValue)")
         .animation(reduceMotion ? nil : NBAnimation.quick, value: model.state.presentation)
-        .animation(reduceMotion ? nil : NBAnimation.quick, value: showsBrowserMenu)
         .onDisappear { model.stopTracking() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {

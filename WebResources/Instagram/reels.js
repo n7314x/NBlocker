@@ -9,7 +9,11 @@
     for (const anchor of anchors) {
       const inNavigation = anchor.closest('nav, [role="navigation"]');
       const inFeedArticle = anchor.closest("article");
-      if (inNavigation && runtime.config.hideReelsTab) {
+      const hiddenNavigationItem = runtime.config.hideReelsTab &&
+        runtime.instagramNavigation?.hideItem(anchor, "instagram.reels.tab");
+      if (hiddenNavigationItem) {
+        continue;
+      } else if (inNavigation && runtime.config.hideReelsTab) {
         runtime.hide(anchor.closest('a, [role="link"]') || anchor, "instagram.reels.tab");
       } else if (inFeedArticle && runtime.config.hideReelsInFeed) {
         runtime.hide(inFeedArticle, "instagram.reels.feed");
@@ -19,7 +23,9 @@
     }
     const labeled = root.querySelectorAll?.('[aria-label*="Reels" i]') || [];
     for (const element of labeled) {
-      if (runtime.config.hideReelsTab && element.closest('nav, [role="navigation"]')) {
+      if (!runtime.config.hideReelsTab) continue;
+      if (runtime.instagramNavigation?.hideItem(element, "instagram.reels.tab")) continue;
+      if (element.closest('nav, [role="navigation"]')) {
         runtime.hide(element.closest('a, [role="link"]') || element, "instagram.reels.tab");
       }
     }

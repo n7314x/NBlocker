@@ -7,7 +7,9 @@
     for (const link of links) {
       const path = new URL(link.href, location.href).pathname;
       if (!path.startsWith("/direct") && !path.startsWith("/accounts")) {
-        window.NBlocker.hide(link, "instagram.messages.only");
+        if (!runtime.instagramNavigation?.hideItem(link, "instagram.messages.only")) {
+          runtime.hide(link, "instagram.messages.only");
+        }
       }
     }
   });
