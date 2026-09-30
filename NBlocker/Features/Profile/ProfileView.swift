@@ -4,58 +4,53 @@ struct ProfileView: View {
     @Environment(AppEnvironment.self) private var environment
 
     var body: some View {
-        NBRootScrollView {
-            NBSectionHeader(title: "Profile", subtitle: "No NBlocker account required")
+        NBRootScrollView(spacing: NBSpacing.xLarge) {
+            NBScreenHeader("Profile")
 
-            VStack(spacing: NBSpacing.xSmall) {
+            VStack(spacing: NBSpacing.small) {
                 Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 34, weight: .regular))
+                    .font(.system(size: 48, weight: .regular))
                     .foregroundStyle(Color.accentColor)
-                    .frame(width: 56, height: 56)
+                    .frame(width: 82, height: 82)
                     .glassEffect(
-                        .regular.tint(Color.accentColor.opacity(0.16)),
+                        .regular.tint(Color.accentColor.opacity(0.14)),
                         in: Circle()
                     )
 
                 Text("Local profile")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.title2.weight(.semibold))
 
-                Text("Your settings stay on this device")
-                    .font(.caption2)
+                Label("Stored only on this device", systemImage: "lock.fill")
+                    .font(.subheadline)
                     .foregroundStyle(NBColor.secondaryText)
             }
             .frame(maxWidth: .infinity)
 
             ProfileStatsView(usage: environment.usage.statistics())
 
-            NBCard {
-                VStack(spacing: 0) {
-                    link("Appearance", "circle.lefthalf.filled") { AppearanceSettingsView() }
-                    Divider().overlay(NBColor.border)
-                    link("Notifications", "bell") { NotificationSettingsView() }
-                    Divider().overlay(NBColor.border)
-                    link("Privacy", "hand.raised") { PrivacySettingsView() }
-                    Divider().overlay(NBColor.border)
-                    link("App Icons", "app.dashed") { AppIconPickerView() }
-                    Divider().overlay(NBColor.border)
-                    link("Data & Debug", "externaldrive") { DebugSettingsView() }
-                    Divider().overlay(NBColor.border)
-                    link("About", "info.circle") { AboutView() }
-                }
+            VStack(spacing: NBSpacing.standard) {
+                profileLink("Appearance", "circle.lefthalf.filled") { AppearanceSettingsView() }
+                profileLink("Notifications", "bell.fill") { NotificationSettingsView() }
+                profileLink("Privacy", "hand.raised.fill") { PrivacySettingsView() }
+                profileLink("App Icons", "app.dashed") { AppIconPickerView() }
+                profileLink("Data & Debug", "externaldrive.fill") { DebugSettingsView() }
+                profileLink("About NBlocker", "questionmark.circle.fill") { AboutView() }
             }
         }
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("screen.profile")
     }
 
-    private func link<Destination: View>(
+    private func profileLink<Destination: View>(
         _ title: String,
         _ symbol: String,
         @ViewBuilder destination: () -> Destination
     ) -> some View {
         NavigationLink(destination: destination) {
-            NBSettingRow(symbol: symbol, title: title)
+            NBCard(padding: NBSpacing.standard) {
+                NBSettingRow(symbol: symbol, title: title)
+            }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(NBSpringPressButtonStyle())
     }
 }

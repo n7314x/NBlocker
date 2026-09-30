@@ -9,18 +9,15 @@ struct HomeView: View {
         let stats = environment.usage.statistics(for: platform)
 
         NBRootScrollView {
-            HStack(spacing: NBSpacing.small) {
-                Text("NBlocker")
-                    .font(NBTypography.pageTitle)
-
-                Spacer()
-
+            NBScreenHeader("NBlocker") {
                 Button {
                     router.selectedTab = .protection
                     HapticManager.play(.light)
                 } label: {
-                    Label("Focus", systemImage: "scope")
-                        .font(.caption.weight(.semibold))
+                    Label("Protect", systemImage: "shield.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, NBSpacing.small)
+                        .frame(minHeight: 38)
                 }
                 .buttonStyle(.glass)
                 .controlSize(.small)
@@ -28,17 +25,21 @@ struct HomeView: View {
                 .accessibilityIdentifier("home.focus")
             }
 
-            PlatformUsageView(platform: platform, statistics: stats)
-                .frame(maxWidth: .infinity)
+            VStack(spacing: NBSpacing.small) {
+                PlatformUsageView(platform: platform, statistics: stats)
 
-            Button("See activity") {
-                router.selectedTab = .activity
-                HapticManager.play(.light)
+                Button {
+                    router.selectedTab = .activity
+                    HapticManager.play(.light)
+                } label: {
+                    Label("See activity", systemImage: "chevron.right")
+                        .labelStyle(.titleAndIcon)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(NBColor.secondaryText)
+                }
+                .accessibilityIdentifier("home.seeActivity")
             }
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(platform.accentColor)
             .frame(maxWidth: .infinity)
-            .accessibilityIdentifier("home.seeActivity")
 
             PlatformCarouselView(platform: $platform) { selected in
                 router.presentedBrowser = selected
@@ -49,20 +50,25 @@ struct HomeView: View {
                 router.presentedSettings = platform
             } label: {
                 NBCard {
-                    HStack(spacing: NBSpacing.medium) {
+                    HStack(spacing: NBSpacing.standard) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(platform.settingsTitle)
-                                .font(.subheadline.weight(.semibold))
-                            Text("Choose what stays useful and what disappears")
-                                .font(.caption2)
+                                .font(.headline.weight(.semibold))
+                            Text("Choose what stays useful")
+                                .font(.subheadline)
                                 .foregroundStyle(NBColor.secondaryText)
                         }
 
                         Spacer()
 
                         Image(systemName: "slider.horizontal.3")
-                            .font(.subheadline)
-                            .foregroundStyle(platform.accentColor)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 46, height: 46)
+                            .glassEffect(
+                                .regular.tint(platform.accentColor.opacity(0.24)).interactive(),
+                                in: Circle()
+                            )
                     }
                 }
             }
@@ -76,7 +82,7 @@ struct HomeView: View {
                 colors: [platform.accentColor.opacity(0.10), .clear],
                 center: .top,
                 startRadius: 0,
-                endRadius: 260
+                endRadius: 340
             )
             .ignoresSafeArea()
             .allowsHitTesting(false)

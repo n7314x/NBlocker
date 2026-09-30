@@ -8,11 +8,12 @@ struct NBUsageRing: View {
 
     var body: some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.08), lineWidth: 8)
+            Circle().stroke(Color.white.opacity(0.10), lineWidth: 9)
             Circle()
                 .trim(from: 0, to: min(max(progress, 0), 1))
-                .stroke(tint, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(tint, style: StrokeStyle(lineWidth: 9, lineCap: .round))
                 .rotationEffect(.degrees(-90))
+                .shadow(color: tint.opacity(0.28), radius: 8)
             VStack(spacing: NBSpacing.xSmall) {
                 Text(value)
                     .font(.system(.title3, design: .rounded, weight: .bold))
@@ -22,6 +23,6 @@ struct NBUsageRing: View {
                     .foregroundStyle(NBColor.secondaryText)
             }
         }
-        .frame(width: 116, height: 116)
+        .frame(width: 96, height: 96)
     }
 }

@@ -55,8 +55,10 @@ struct StrictModeView: View {
                 disableStrictMode()
                 overrideRequest = nil
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+            .presentationCornerRadius(NBRadius.sheet)
+            .presentationBackground(NBColor.sheet)
         }
     }
 
@@ -105,9 +107,7 @@ private struct StrictOverrideSheet: View {
         NavigationStack {
             TimelineView(.periodic(from: .now, by: 0.1)) { context in
                 VStack(spacing: NBSpacing.large) {
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 34, weight: .semibold))
-                        .foregroundStyle(NBColor.warning)
+                    Spacer()
 
                     VStack(spacing: NBSpacing.small) {
                         Text("Strict Mode Override")
@@ -128,15 +128,22 @@ private struct StrictOverrideSheet: View {
                         .font(.caption)
                         .foregroundStyle(NBColor.quietText)
                         .multilineTextAlignment(.center)
+
+                    Spacer()
+
+                    Button("Keep Strict Mode On") {
+                        dismiss()
+                    }
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color.white.opacity(0.12), in: Capsule())
                 }
-                .padding(NBSpacing.large)
+                .padding(NBSpacing.xLarge)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .background(NBColor.canvas.ignoresSafeArea())
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Keep On") { dismiss() }
-                }
-            }
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
@@ -146,29 +153,40 @@ private struct StrictOverrideSheet: View {
             min(max(date.timeIntervalSince($0) / 5, 0), 1)
         } ?? 0
 
-        Button {} label: {
-            Label("Hold to turn off", systemImage: "hand.tap.fill")
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background {
-                    GeometryReader { proxy in
-                        Capsule()
-                            .fill(NBColor.warning.opacity(0.25))
-                            .frame(width: proxy.size.width * progress)
-                    }
+        VStack(spacing: NBSpacing.large) {
+            Button {} label: {
+                ZStack {
+                    Circle()
+                        .stroke(NBColor.warning.opacity(0.20), lineWidth: 10)
+                    Circle()
+                        .trim(from: 0, to: progress)
+                        .stroke(NBColor.warning, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    Circle()
+                        .fill(NBColor.warning.opacity(0.12))
+                        .padding(15)
+                    Image(systemName: "lock.open.fill")
+                        .font(.system(size: 44, weight: .semibold))
+                        .foregroundStyle(.white)
                 }
+                .frame(width: 184, height: 184)
+            }
+            .buttonStyle(.plain)
+            .scaleEffect(reduceMotion || holdStartedAt == nil ? 1 : 0.97)
+            .animation(reduceMotion ? nil : NBAnimation.quick, value: holdStartedAt == nil)
+            .onLongPressGesture(minimumDuration: 5, maximumDistance: 44) {
+                disable()
+            } onPressingChanged: { isPressing in
+                holdStartedAt = isPressing ? .now : nil
+            }
+            .accessibilityLabel("Turn off Strict Mode")
+            .accessibilityHint("Hold continuously for five seconds. Assistive activation confirms immediately.")
+            .accessibilityAction { disable() }
+
+            Text("Hold the lock for 5 seconds to turn off")
+                .font(.headline)
+                .multilineTextAlignment(.center)
         }
-        .buttonStyle(.glassProminent)
-        .scaleEffect(reduceMotion || holdStartedAt == nil ? 1 : 0.985)
-        .animation(reduceMotion ? nil : NBAnimation.quick, value: holdStartedAt == nil)
-        .onLongPressGesture(minimumDuration: 5, maximumDistance: 44) {
-            disable()
-        } onPressingChanged: { isPressing in
-            holdStartedAt = isPressing ? .now : nil
-        }
-        .accessibilityLabel("Turn off Strict Mode")
-        .accessibilityHint("Hold continuously for five seconds. Assistive activation confirms immediately.")
-        .accessibilityAction { disable() }
     }
 
     @ViewBuilder

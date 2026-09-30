@@ -4,7 +4,7 @@ struct InstagramSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var settings: InstagramSettings
     @State private var confirmsSiteDataClear = false
-    @State private var selectedDetent: PresentationDetent = .fraction(0.94)
+    @State private var selectedDetent: PresentationDetent = .fraction(0.58)
     let save: (InstagramSettings) -> Void
 
     init(settings: InstagramSettings, save: @escaping (InstagramSettings) -> Void) {
@@ -14,7 +14,7 @@ struct InstagramSettingsView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: NBSpacing.standard) {
+            LazyVStack(spacing: NBSpacing.xLarge) {
                 InstagramSettingsHeader(filteringEnabled: settings.filteringEnabled) {
                     save(settings)
                     dismiss()
@@ -30,9 +30,11 @@ struct InstagramSettingsView: View {
                 InstagramAppearanceSettingsView(settings: $settings)
                 InstagramScrollSettingsView(settings: $settings)
 
-                InstagramSettingsCard {
-                    VStack(alignment: .leading, spacing: NBSpacing.medium) {
-                        NBSectionHeader(title: "Accounts & Site Data", subtitle: "Instagram authentication stays in WebKit")
+                InstagramSettingsSection(
+                    "Accounts & Site Data",
+                    subtitle: "Instagram authentication stays in WebKit"
+                ) {
+                    VStack(alignment: .leading, spacing: 0) {
                         Button(role: .destructive) {
                             confirmsSiteDataClear = true
                         } label: {
@@ -44,15 +46,15 @@ struct InstagramSettingsView: View {
                     }
                 }
             }
-            .padding(.horizontal, NBSpacing.standard)
+            .padding(.horizontal, NBSpacing.screen)
             .padding(.top, NBSpacing.small)
-            .padding(.bottom, 38)
+            .padding(.bottom, 44)
         }
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.basedOnSize)
         .background {
             ZStack {
-                Color.black
+                NBColor.sheet
                 RadialGradient(
                     colors: [Platform.instagram.accentColor.opacity(0.08), .clear],
                     center: .top,
@@ -70,11 +72,11 @@ struct InstagramSettingsView: View {
         } message: {
             Text("This signs Instagram out. NBlocker never reads the credentials being removed.")
         }
-        .presentationDetents([.fraction(0.94), .large], selection: $selectedDetent)
+        .presentationDetents([.fraction(0.58), .large], selection: $selectedDetent)
         .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(32)
-        .presentationBackground(NBColor.canvas)
-        .presentationContentInteraction(.scrolls)
+        .presentationCornerRadius(NBRadius.sheet)
+        .presentationBackground(NBColor.sheet)
+        .presentationContentInteraction(.resizes)
         .onDisappear { save(settings) }
         .accessibilityIdentifier("settings.instagram")
     }

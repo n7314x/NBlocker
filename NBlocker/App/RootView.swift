@@ -8,34 +8,44 @@ struct RootView: View {
         @Bindable var router = environment.router
 
         TabView(selection: $router.selectedTab) {
-            Tab("Sleep", systemImage: RootTab.sleep.symbolName, value: RootTab.sleep) {
+            Tab(value: RootTab.sleep) {
                 NavigationStack {
                     SleepView()
                 }
+            } label: {
+                rootTabLabel(.sleep)
             }
 
-            Tab("Activity", systemImage: RootTab.activity.symbolName, value: RootTab.activity) {
+            Tab(value: RootTab.activity) {
                 NavigationStack {
                     ActivityView()
                 }
+            } label: {
+                rootTabLabel(.activity)
             }
 
-            Tab("Home", systemImage: RootTab.home.symbolName, value: RootTab.home) {
+            Tab(value: RootTab.home) {
                 NavigationStack {
                     HomeView()
                 }
+            } label: {
+                rootTabLabel(.home)
             }
 
-            Tab("Protection", systemImage: RootTab.protection.symbolName, value: RootTab.protection) {
+            Tab(value: RootTab.protection) {
                 NavigationStack {
                     ProtectionView()
                 }
+            } label: {
+                rootTabLabel(.protection)
             }
 
-            Tab("Profile", systemImage: RootTab.profile.symbolName, value: RootTab.profile) {
+            Tab(value: RootTab.profile) {
                 NavigationStack {
                     ProfileView()
                 }
+            } label: {
+                rootTabLabel(.profile)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -72,5 +82,14 @@ struct RootView: View {
                 transaction.disablesAnimations = true
             }
         }
+    }
+
+    private func rootTabLabel(_ tab: RootTab) -> some View {
+        Label(
+            tab.title,
+            systemImage: environment.router.selectedTab == tab ? tab.selectedSymbolName : tab.symbolName
+        )
+            .labelStyle(.iconOnly)
+            .accessibilityLabel(tab.title)
     }
 }

@@ -8,8 +8,8 @@ struct BrowserMenuView: View {
     let exitToHome: () -> Void
 
     var body: some View {
-        GlassEffectContainer(spacing: NBSpacing.small) {
-            HStack(spacing: 2) {
+        GlassEffectContainer(spacing: 0) {
+            HStack(spacing: 0) {
                 control("chevron.backward", "Back", enabled: model.state.canGoBack) {
                     model.goBack()
                 }
@@ -21,28 +21,28 @@ struct BrowserMenuView: View {
                     model.goForward()
                 }
                 control("person.2.fill", "Switch accounts", action: showAccounts)
-                control("clipboard.fill", "Open link from clipboard", action: openClipboard)
+                control("link", "Open link from clipboard", action: openClipboard)
 
-                Capsule()
+                Rectangle()
                     .fill(Color.white.opacity(0.18))
-                    .frame(width: 1, height: 24)
-                    .padding(.horizontal, 5)
+                    .frame(width: 1, height: 30)
+                    .padding(.horizontal, 6)
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
 
-                control("slider.horizontal.3", "Settings", action: showSettings)
+                control("gearshape.fill", "Settings", action: showSettings)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .glassEffect(.regular, in: Capsule())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .glassEffect(.regular.tint(Color.white.opacity(0.03)), in: Capsule())
         }
         .overlay {
             Capsule()
-                .stroke(Color.white.opacity(0.13), lineWidth: 0.6)
+                .stroke(Color.white.opacity(0.24), lineWidth: 0.9)
                 .allowsHitTesting(false)
         }
-        .shadow(color: .black.opacity(0.58), radius: 24, y: 12)
-        .shadow(color: Color.accentColor.opacity(0.12), radius: 16)
+        .shadow(color: .black.opacity(0.62), radius: 24, y: 12)
+        .shadow(color: Color.accentColor.opacity(0.10), radius: 18)
         .accessibilityIdentifier("browser.controlsMenu")
     }
 
@@ -57,8 +57,8 @@ struct BrowserMenuView: View {
             action()
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 16, weight: .semibold))
-                .frame(width: 38, height: 44)
+                .font(.system(size: 19, weight: .semibold))
+                .frame(width: 42, height: 48)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

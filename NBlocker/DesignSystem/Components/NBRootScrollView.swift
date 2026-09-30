@@ -7,7 +7,7 @@ struct NBRootScrollView<Content: View>: View {
     @ViewBuilder private let content: Content
 
     init(
-        spacing: CGFloat = NBSpacing.medium,
+        spacing: CGFloat = NBSpacing.large,
         @ViewBuilder content: () -> Content
     ) {
         self.spacing = spacing
@@ -20,9 +20,9 @@ struct NBRootScrollView<Content: View>: View {
                 VStack(alignment: .leading, spacing: spacing) {
                     content
                 }
-                .padding(.horizontal, NBSpacing.standard)
-                .padding(.top, NBSpacing.small)
-                .padding(.bottom, NBSpacing.medium)
+                .padding(.horizontal, NBSpacing.screen)
+                .padding(.top, NBSpacing.standard)
+                .padding(.bottom, NBSpacing.section)
                 .frame(
                     maxWidth: .infinity,
                     minHeight: proxy.size.height,

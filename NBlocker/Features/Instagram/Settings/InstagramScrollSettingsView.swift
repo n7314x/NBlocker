@@ -18,9 +18,8 @@ struct InstagramScrollSettingsView: View {
     }
 
     var body: some View {
-        InstagramSettingsCard {
-            VStack(alignment: .leading, spacing: NBSpacing.medium) {
-                NBSectionHeader(title: "Scroll Control", subtitle: "Gentle reminders inside this browser session")
+        InstagramSettingsSection("Scroll Control", subtitle: "Gentle reminders inside this browser session") {
+            VStack(alignment: .leading, spacing: 0) {
                 NBToggleRow(title: "Time reminder", isOn: hasTimeReminder)
                 Stepper(
                     "Reminder after \(settings.scrollReminderMinutes ?? 10) minutes",
@@ -32,7 +31,7 @@ struct InstagramScrollSettingsView: View {
                     step: 5
                 )
                 .disabled(settings.scrollReminderMinutes == nil)
-                .padding(.vertical, NBSpacing.small)
+                .frame(minHeight: 54)
 
                 Divider().overlay(NBColor.border)
                 NBToggleRow(title: "Post reminder", isOn: hasPostReminder)
@@ -46,7 +45,7 @@ struct InstagramScrollSettingsView: View {
                     step: 10
                 )
                 .disabled(settings.scrollReminderPosts == nil)
-                .padding(.top, NBSpacing.small)
+                .frame(minHeight: 54)
             }
         }
     }

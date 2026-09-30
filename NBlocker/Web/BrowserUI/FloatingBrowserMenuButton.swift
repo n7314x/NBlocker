@@ -24,18 +24,18 @@ struct FloatingBrowserMenuButton: View {
                     .allowsHitTesting(false)
 
                 Image(systemName: isExpanded ? "xmark" : "line.3.horizontal")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .contentTransition(.symbolEffect(.replace))
                     .allowsHitTesting(false)
             }
-            .frame(width: 58, height: 58)
+            .frame(width: 56, height: 56)
             .contentShape(Circle())
         }
         .buttonStyle(BrowserBubbleButtonStyle(reduceMotion: reduceMotion))
         .glassEffect(.regular.interactive(), in: Circle())
         .overlay {
             Circle()
-                .stroke(Color.white.opacity(isExpanded ? 0.22 : 0.12), lineWidth: 0.7)
+                .stroke(Color.white.opacity(isExpanded ? 0.28 : 0.18), lineWidth: 0.9)
                 .allowsHitTesting(false)
         }
         .shadow(color: Color.black.opacity(0.52), radius: 16, y: 8)

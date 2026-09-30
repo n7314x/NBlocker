@@ -21,13 +21,13 @@ struct NBSettingRow<Trailing: View>: View {
     var body: some View {
         HStack(spacing: NBSpacing.medium) {
             Image(systemName: symbol)
-                .font(.subheadline)
-                .frame(width: 22)
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 26)
                 .foregroundStyle(.tint)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.subheadline)
+                    .font(.body.weight(.medium))
                 if let subtitle {
                     Text(subtitle)
                         .font(.caption2)
@@ -38,7 +38,7 @@ struct NBSettingRow<Trailing: View>: View {
             Spacer(minLength: NBSpacing.small)
             trailing
         }
-        .frame(minHeight: 40)
+        .frame(minHeight: 48)
         .contentShape(Rectangle())
     }
 }

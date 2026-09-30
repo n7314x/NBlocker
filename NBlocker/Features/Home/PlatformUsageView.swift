@@ -5,15 +5,15 @@ struct PlatformUsageView: View {
     let statistics: UsageStatistics
 
     var body: some View {
-        VStack(spacing: NBSpacing.xSmall) {
+        VStack(spacing: 2) {
             Text("\(platform.displayName) today")
-                .font(NBTypography.label)
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(NBColor.secondaryText)
             Text(statistics.duration.compactDuration)
                 .font(NBTypography.usageValue)
                 .contentTransition(.numericText())
             Text("\(statistics.sessions) sessions · \(statistics.preventedNavigations) detours prevented")
-                .font(.caption)
+                .font(.footnote)
                 .foregroundStyle(NBColor.quietText)
         }
         .animation(NBAnimation.content, value: platform)

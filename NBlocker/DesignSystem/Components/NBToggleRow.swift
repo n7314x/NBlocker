@@ -18,6 +18,6 @@ struct NBToggleRow: View {
             }
         }
         .tint(.accentColor)
-        .padding(.vertical, NBSpacing.xSmall)
+        .frame(minHeight: 54)
     }
 }

@@ -8,19 +8,24 @@ struct NBStrictModeSlider: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let thumb: CGFloat = 44
+            let thumb: CGFloat = 62
             let travel = max(0, proxy.size.width - thumb - 8)
             ZStack(alignment: .leading) {
-                Capsule().fill(isActive ? NBColor.success.opacity(0.2) : Color.white.opacity(0.07))
+                Capsule()
+                    .fill(isActive ? NBColor.success.opacity(0.14) : Color.white.opacity(0.055))
+                    .overlay {
+                        Capsule().stroke(NBColor.border, lineWidth: 1)
+                    }
                 Text(isActive ? "Strict Mode active" : "Slide to activate")
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(isActive ? NBColor.success : NBColor.secondaryText)
                     .frame(maxWidth: .infinity)
                 Circle()
-                    .fill(isActive ? NBColor.success : .white)
+                    .fill(isActive ? NBColor.success : NBColor.warning)
                     .overlay {
                         Image(systemName: isActive ? "lock.fill" : "chevron.right.2")
-                            .foregroundStyle(.black)
+                            .font(.system(size: 19, weight: .bold))
+                            .foregroundStyle(.white)
                     }
                     .padding(4)
                     .frame(width: thumb, height: thumb)
@@ -42,7 +47,7 @@ struct NBStrictModeSlider: View {
                     )
             }
         }
-        .frame(height: 52)
+        .frame(height: 70)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(isActive ? "Strict Mode active" : "Activate Strict Mode")
         .accessibilityAddTraits(.isButton)

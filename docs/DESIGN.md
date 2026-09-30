@@ -14,6 +14,7 @@ Motion is short and physical: selected platforms scale slightly, values transiti
 and controls use restrained interactive springs. Reduce Motion replaces spatial
 motion with fades.
 
-The SocialLite reference is limited to broad information hierarchy. NBlocker uses
-its own layout, copy, symbols, component proportions, motion, and implementation.
-No reference screenshots were present in `Reference/Screenshots` as of milestone 1.
+The supplied SocialLite screenshots are limited to visual hierarchy and interaction
+reference. NBlocker keeps its own copy, symbols, platform marks, local data, motion,
+privacy model, and implementation while adopting the reference set's compact dark
+composition, outlined surfaces, icon-only navigation, and sheet hierarchy.

@@ -7,7 +7,7 @@ struct NBPlatformCarousel: View {
     @State private var visiblePlatform: Platform?
 
     var body: some View {
-        VStack(spacing: NBSpacing.small) {
+        VStack(spacing: NBSpacing.medium) {
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 0) {
                     ForEach(Platform.allCases) { platform in
@@ -15,12 +15,11 @@ struct NBPlatformCarousel: View {
                             open(platform)
                         } label: {
                             PlatformLaunchLabel(platform: platform)
-                            .scaleEffect(
-                                selection == platform || reduceMotion ? 1 : 0.96
-                            )
-                            .animation(NBAnimation.interactive, value: selection)
-                            .frame(maxWidth: .infinity)
-                            .contentShape(Rectangle())
+                                .scaleEffect(selection == platform || reduceMotion ? 1 : 0.94)
+                                .opacity(selection == platform ? 1 : 0.72)
+                                .animation(NBAnimation.interactive, value: selection)
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(PremiumPlatformLaunchButtonStyle(
                             accent: platform.accentColor,
@@ -36,6 +35,7 @@ struct NBPlatformCarousel: View {
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $visiblePlatform)
+            .frame(height: 270)
             .accessibilityIdentifier("home.platformCarousel")
 
             HStack(spacing: NBSpacing.small) {
@@ -67,70 +67,31 @@ private struct PlatformLaunchLabel: View {
     let platform: Platform
 
     var body: some View {
-        HStack(spacing: NBSpacing.standard) {
+        VStack(spacing: NBSpacing.large) {
             ZStack {
                 Circle()
-                    .fill(platform.accentColor.opacity(0.16))
-                    .frame(width: 78, height: 78)
-                    .blur(radius: 7)
+                    .fill(platform.accentColor.opacity(0.18))
+                    .frame(width: 176, height: 176)
+                    .blur(radius: 26)
                     .allowsHitTesting(false)
 
-                NBPlatformIcon(platform: platform, size: 62)
+                NBPlatformIcon(platform: platform, size: 142)
             }
 
-            VStack(alignment: .leading, spacing: NBSpacing.xSmall) {
-                Text("OPEN INTENTIONALLY")
-                    .font(.caption2.weight(.bold))
-                    .tracking(0.9)
-                    .foregroundStyle(platform.accentColor)
-
-                Text(platform.displayName)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.white)
-
-                Text(platform == .instagram ? "Your filters. Your pace." : "Watch with fewer distractions.")
-                    .font(.caption)
-                    .foregroundStyle(NBColor.secondaryText)
-                    .lineLimit(1)
-            }
-
-            Spacer(minLength: NBSpacing.small)
-
-            Image(systemName: "arrow.up.right")
-                .font(.system(size: 14, weight: .bold))
+            Label("Open \(platform.displayName)", systemImage: "arrow.up.right")
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white)
-                .frame(width: 42, height: 42)
-                .glassEffect(.regular.tint(platform.accentColor.opacity(0.32)).interactive(), in: Circle())
+                .padding(.horizontal, NBSpacing.standard)
+                .frame(minHeight: 38)
+                .background(Color.white.opacity(0.07), in: Capsule())
+                .overlay {
+                    Capsule()
+                        .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+                        .allowsHitTesting(false)
+                }
         }
-        .padding(NBSpacing.standard)
-        .background {
-            ZStack {
-                RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous)
-                    .fill(NBColor.cardRaised)
-                LinearGradient(
-                    colors: [platform.accentColor.opacity(0.13), .clear, platform.secondaryAccentColor.opacity(0.07)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .clipShape(RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous))
-                .allowsHitTesting(false)
-            }
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [platform.accentColor.opacity(0.40), Color.white.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 0.8
-                )
-                .allowsHitTesting(false)
-        }
-        .shadow(color: platform.accentColor.opacity(0.17), radius: 22, y: 9)
-        .padding(.horizontal, 2)
-        .padding(.vertical, NBSpacing.small)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .shadow(color: platform.accentColor.opacity(0.22), radius: 24)
     }
 }
 

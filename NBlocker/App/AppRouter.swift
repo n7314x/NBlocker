@@ -20,6 +20,16 @@ enum RootTab: String, CaseIterable, Identifiable, Hashable, Sendable {
         case .profile: "person.crop.circle"
         }
     }
+
+    var selectedSymbolName: String {
+        switch self {
+        case .sleep: "moon.fill"
+        case .activity: "chart.bar.fill"
+        case .home: "house.fill"
+        case .protection: "shield.fill"
+        case .profile: "person.crop.circle.fill"
+        }
+    }
 }
 
 @MainActor

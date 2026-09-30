@@ -14,28 +14,54 @@ struct InstagramSettingsCard<Content: View>: View {
             .background {
                 RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous)
                     .fill(NBColor.card)
-                    .overlay {
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.035), .clear],
-                            startPoint: .top,
-                            endPoint: .center
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous))
-                        .allowsHitTesting(false)
-                    }
             }
             .overlay {
                 RoundedRectangle(cornerRadius: NBRadius.prominent, style: .continuous)
                     .stroke(
                         LinearGradient(
-                            colors: [Color.white.opacity(0.14), Color.white.opacity(0.045)],
+                        colors: [Color.white.opacity(0.20), Color.white.opacity(0.08)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 0.7
+                    lineWidth: 1
                     )
                     .allowsHitTesting(false)
             }
-            .shadow(color: .black.opacity(0.22), radius: 12, y: 6)
+            .shadow(color: .black.opacity(0.18), radius: 10, y: 5)
+    }
+}
+
+struct InstagramSettingsSection<Content: View>: View {
+    let title: String
+    var subtitle: String?
+    @ViewBuilder let content: Content
+
+    init(
+        _ title: String,
+        subtitle: String? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: NBSpacing.medium) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.title3.weight(.semibold))
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(NBColor.secondaryText)
+                }
+            }
+            .padding(.horizontal, NBSpacing.small)
+
+            InstagramSettingsCard {
+                content
+            }
+        }
     }
 }

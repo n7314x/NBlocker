@@ -166,9 +166,8 @@ struct PlatformBrowserView: View {
                     exitToHome: { performMenuAction(exitToHome) }
                 )
                 .position(menuPosition)
-                .scaleEffect(showsBrowserMenu ? 1 : 0.84, anchor: menuPosition.y < buttonPosition.y ? .bottom : .top)
+                .scaleEffect(showsBrowserMenu ? 1 : 0.92, anchor: menuPosition.y < buttonPosition.y ? .bottom : .top)
                 .opacity(showsBrowserMenu ? 1 : 0)
-                .blur(radius: showsBrowserMenu ? 0 : 7)
                 .allowsHitTesting(showsBrowserMenu)
                 .accessibilityHidden(!showsBrowserMenu)
                 .zIndex(20)
@@ -205,8 +204,8 @@ struct PlatformBrowserView: View {
     }
 
     private func browserMenuPosition(near button: CGPoint, in proxy: GeometryProxy) -> CGPoint {
-        let halfWidth: CGFloat = 158
-        let verticalSpacing: CGFloat = 70
+        let halfWidth: CGFloat = 170
+        let verticalSpacing: CGFloat = 72
         let x = min(max(button.x, halfWidth + NBSpacing.small), proxy.size.width - halfWidth - NBSpacing.small)
         let spaceAbove = button.y - proxy.safeAreaInsets.top
         let y = spaceAbove > 118 ? button.y - verticalSpacing : button.y + verticalSpacing

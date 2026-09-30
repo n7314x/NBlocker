@@ -8,6 +8,8 @@ NBlocker must remain distinct. It uses different code, wording, symbols, spacing
 card construction, motion, toolbar grouping, route model, and privacy architecture.
 No proprietary asset, logo, source, or pixel-perfect screen should be copied.
 
-`Reference/Screenshots` contained no screenshots during milestone 1. If the user adds
-images later, document only the hierarchy and interaction insights derived from them,
-not a reproduction recipe.
+The supplied reference set is used only to map broad hierarchy and interaction:
+Sleep Mode informs Sleep, Screen Time informs Activity, App Switcher informs Home,
+App Picker informs Protection, Profile informs Profile, and the toolbar/settings
+references inform browser controls and settings-sheet presentation. NBlocker keeps
+its own symbols, copy, local data, platform accents, and capability truthfulness.
