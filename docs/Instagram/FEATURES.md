@@ -4,7 +4,8 @@
 
 - persistent website session and native browser navigation;
 - intentional preference-application launch state with retryable load failure UI;
-- compact session/detection status and a floating browser-controls surface;
+- Home-only session/detection status above the webpage and a floating
+  browser-controls surface;
 - enable/disable filtering without clearing session data;
 - hide Reels navigation/feed/profile entry points and optional Reel URL blocking;
 - best-effort Reel autoplay attribute removal, muting, and next-Reel click prevention;

@@ -23,6 +23,45 @@ final class UsageTrackerTests: XCTestCase {
         XCTAssertEqual(statistics.preventedNavigations, 1)
     }
 
+    @MainActor
+    func testUsageTrackingContinuesWhenInstagramMetricsVisibilityChanges() throws {
+        let suite = "UsageTrackerMetricsVisibilityTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let tracker = UsageTracker(store: UsageStore(defaults: defaults))
+        let start = Date(timeIntervalSince1970: 2_000)
+        let home = try XCTUnwrap(URL(string: "https://www.instagram.com/"))
+        let inbox = try XCTUnwrap(URL(string: "https://www.instagram.com/direct/inbox/"))
+
+        tracker.begin(platform: .instagram, at: start)
+        let activeSessionID = try XCTUnwrap(tracker.activeSession?.id)
+
+        XCTAssertTrue(BrowserMetricsVisibility.shouldShowInstagramHomeMetrics(
+            platform: .instagram,
+            presentation: .ready,
+            currentURL: home,
+            hasAuthenticatedInstagramShell: true
+        ))
+        XCTAssertFalse(BrowserMetricsVisibility.shouldShowInstagramHomeMetrics(
+            platform: .instagram,
+            presentation: .ready,
+            currentURL: inbox,
+            hasAuthenticatedInstagramShell: true
+        ))
+        XCTAssertEqual(tracker.activeSession?.id, activeSessionID)
+
+        tracker.end(at: start.addingTimeInterval(125))
+        XCTAssertEqual(
+            UsageStore(defaults: defaults).statistics(
+                for: .instagram,
+                on: start,
+                asOf: start.addingTimeInterval(125)
+            ).duration,
+            125,
+            accuracy: 0.001
+        )
+    }
+
     func testUsageSessionDecodesMissingCounters() throws {
         let id = UUID()
         let startedAt = Date(timeIntervalSinceReferenceDate: 1_000)

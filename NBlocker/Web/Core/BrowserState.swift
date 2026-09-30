@@ -20,6 +20,25 @@ struct BrowserState: Equatable, Sendable {
     var canGoBack = false
     var canGoForward = false
     var currentURL: URL?
+    var hasAuthenticatedInstagramShell = false
     var message: String?
     var metrics = BrowserMetrics()
+}
+
+enum BrowserMetricsVisibility {
+    static func shouldShowInstagramHomeMetrics(
+        platform: Platform,
+        presentation: BrowserPresentationState,
+        currentURL: URL?,
+        hasAuthenticatedInstagramShell: Bool
+    ) -> Bool {
+        guard
+            platform == .instagram,
+            presentation == .ready,
+            hasAuthenticatedInstagramShell,
+            let currentURL
+        else { return false }
+
+        return URLHelpers.isInstagramHomeFeedURL(currentURL)
+    }
 }

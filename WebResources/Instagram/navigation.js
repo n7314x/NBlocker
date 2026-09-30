@@ -5,6 +5,56 @@
   window.__nblockerInstagramNavigation = true;
 
   const controlSelector = 'a[href], [role="link"], button';
+  let lastNavigationSignature = "";
+
+  const isFirstPartyInstagramHost = () => {
+    const host = location.hostname.toLowerCase();
+    return host === "instagram.com" || host.endsWith(".instagram.com");
+  };
+
+  const hasAuthenticatedInstagramShell = () => {
+    const hasLoginForm = Boolean(document.querySelector([
+      'form[action*="/accounts/login"]',
+      'input[name="username"]',
+      'input[name="password"]'
+    ].join(", ")));
+    if (hasLoginForm) return false;
+
+    return Boolean(document.querySelector([
+      'a[href="/direct"]',
+      'a[href="/direct/"]',
+      'a[href^="/direct/"]',
+      'a[href^="https://www.instagram.com/direct/"]',
+      'a[href^="https://instagram.com/direct/"]'
+    ].join(", ")));
+  };
+
+  const reportNavigationChanged = () => {
+    if (!isFirstPartyInstagramHost()) return;
+    const authenticated = hasAuthenticatedInstagramShell();
+    const signature = `${location.pathname}:${authenticated}`;
+    if (signature === lastNavigationSignature) return;
+    lastNavigationSignature = signature;
+    runtime.report("navigationChanged", { path: location.pathname, authenticated });
+  };
+
+  const handleHistoryChange = () => {
+    reportNavigationChanged();
+    runtime.schedule(document);
+  };
+
+  for (const methodName of ["pushState", "replaceState"]) {
+    const original = history[methodName];
+    if (typeof original !== "function") continue;
+    history[methodName] = function (...args) {
+      const result = original.apply(this, args);
+      handleHistoryChange();
+      return result;
+    };
+  }
+
+  addEventListener("popstate", handleHistoryChange);
+  addEventListener("pageshow", reportNavigationChanged);
 
   const controlFor = (element) => {
     if (!(element instanceof Element)) return null;
@@ -132,6 +182,7 @@
   };
 
   const compactNavigation = (root) => {
+    reportNavigationChanged();
     const candidates = root.querySelectorAll?.([
       'nav a[href]',
       'nav button',

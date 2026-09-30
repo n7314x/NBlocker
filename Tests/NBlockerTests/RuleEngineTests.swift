@@ -194,6 +194,156 @@ final class RuleEngineTests: XCTestCase {
         XCTAssertFalse(source.contains("browserMenuVisible"))
     }
 
+    func testInstagramHomeMetricsAreVisibleOnAuthenticatedReadyHome() throws {
+        let home = try XCTUnwrap(URL(string: "https://www.instagram.com/"))
+
+        XCTAssertTrue(shouldShowInstagramMetrics(at: home))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: home, authenticated: false))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: home, presentation: .preparing))
+        XCTAssertFalse(BrowserMetricsVisibility.shouldShowInstagramHomeMetrics(
+            platform: .youtube,
+            presentation: .ready,
+            currentURL: home,
+            hasAuthenticatedInstagramShell: true
+        ))
+    }
+
+    func testInstagramHomeMetricsRejectNonBrowserAndInsecureHosts() throws {
+        let apiRoot = try XCTUnwrap(URL(string: "https://api.instagram.com/"))
+        let insecureRoot = try XCTUnwrap(URL(string: "http://www.instagram.com/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: apiRoot))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: insecureRoot))
+    }
+
+    func testInstagramHomeMetricsAreHiddenInDMInbox() throws {
+        let inbox = try XCTUnwrap(URL(string: "https://www.instagram.com/direct/inbox/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: inbox))
+    }
+
+    func testInstagramHomeMetricsAreHiddenInDMThread() throws {
+        let thread = try XCTUnwrap(URL(string: "https://www.instagram.com/direct/t/123456789/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: thread))
+    }
+
+    func testInstagramHomeMetricsAreHiddenInSearch() throws {
+        let explore = try XCTUnwrap(URL(string: "https://www.instagram.com/explore/"))
+        let search = try XCTUnwrap(URL(string: "https://www.instagram.com/explore/search/keyword/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: explore))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: search))
+    }
+
+    func testInstagramHomeMetricsAreHiddenInReels() throws {
+        let reels = try XCTUnwrap(URL(string: "https://www.instagram.com/reels/"))
+        let reel = try XCTUnwrap(URL(string: "https://www.instagram.com/reel/abc/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: reels))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: reel))
+    }
+
+    func testInstagramHomeMetricsAreHiddenOnProfilesAndContent() throws {
+        let profile = try XCTUnwrap(URL(string: "https://www.instagram.com/nblocker/"))
+        let post = try XCTUnwrap(URL(string: "https://www.instagram.com/p/abc/"))
+        let story = try XCTUnwrap(URL(string: "https://www.instagram.com/stories/nblocker/123/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: profile))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: post))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: story))
+    }
+
+    func testInstagramHomeMetricsAreHiddenOnLoginAndAccountRoutes() throws {
+        let login = try XCTUnwrap(URL(string: "https://www.instagram.com/accounts/login/"))
+        let challenge = try XCTUnwrap(URL(string: "https://www.instagram.com/challenge/"))
+        let checkpoint = try XCTUnwrap(URL(string: "https://www.instagram.com/accounts/checkpoint/"))
+
+        XCTAssertFalse(shouldShowInstagramMetrics(at: login))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: challenge))
+        XCTAssertFalse(shouldShowInstagramMetrics(at: checkpoint))
+    }
+
+    func testInstagramMetricsLayoutKeepsOneWebViewMountedOutsideTheOverlay() throws {
+        let source = try repositorySource(at: "NBlocker/Features/Instagram/InstagramView.swift")
+        let webViewCount = source.components(separatedBy: "WebView(model: model)").count - 1
+
+        XCTAssertEqual(webViewCount, 1)
+        XCTAssertTrue(source.contains("if model.shouldShowInstagramHomeMetrics"))
+        XCTAssertTrue(source.contains("VStack(spacing: 0)"))
+        XCTAssertFalse(source.contains("browserChrome: some View {\n        BrowserMetricsBar"))
+    }
+
+    func testBrowserMenuStateDoesNotAffectInstagramMetricsVisibility() throws {
+        let home = try XCTUnwrap(URL(string: "https://www.instagram.com/"))
+        let viewModelSource = try repositorySource(at: "NBlocker/Web/Core/WebViewModel.swift")
+
+        XCTAssertTrue(shouldShowInstagramMetrics(at: home))
+        XCTAssertFalse(viewModelSource.contains("showsBrowserMenu"))
+    }
+
+    @MainActor
+    func testInstagramSPANavigationUpdatesCurrentURLWithoutReplacingSession() throws {
+        let suite = "InstagramSPANavigationTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let model = WebViewModel(
+            platform: .instagram,
+            settings: .default,
+            usageTracker: UsageTracker(store: UsageStore(defaults: defaults)),
+            browserSessionStore: BrowserSessionStore(defaults: defaults)
+        )
+        let sessionID = model.session.id
+
+        model.didChangeInstagramNavigation(
+            path: "/direct/inbox/",
+            hasAuthenticatedInstagramShell: true
+        )
+
+        XCTAssertEqual(model.state.currentURL, URL(string: "https://www.instagram.com/direct/inbox/"))
+        XCTAssertTrue(model.state.hasAuthenticatedInstagramShell)
+        XCTAssertEqual(model.session.id, sessionID)
+
+        model.didChangeInstagramNavigation(
+            path: "/",
+            hasAuthenticatedInstagramShell: true
+        )
+
+        XCTAssertEqual(model.state.currentURL, URL(string: "https://www.instagram.com/"))
+        XCTAssertEqual(model.session.id, sessionID)
+    }
+
+    func testInstagramNavigationBridgeAcceptsOnlySafePathState() {
+        XCTAssertEqual(
+            WebMessageHandler.event(from: [
+                "event": "navigationChanged",
+                "path": "/direct/inbox/",
+                "authenticated": true
+            ]),
+            .navigationChanged(path: "/direct/inbox/", hasAuthenticatedInstagramShell: true)
+        )
+        XCTAssertNil(WebMessageHandler.event(from: [
+            "event": "navigationChanged",
+            "path": "//example.com/steal",
+            "authenticated": true
+        ]))
+        XCTAssertNil(WebMessageHandler.event(from: [
+            "event": "navigationChanged",
+            "path": "/direct/inbox/?token=secret",
+            "authenticated": true
+        ]))
+    }
+
+    func testInstagramNavigationResourceReportsHistoryChangesWithoutPolling() throws {
+        let navigation = try instagramRuleSource(id: "instagram.navigation")
+
+        XCTAssertTrue(navigation.contains("pushState"))
+        XCTAssertTrue(navigation.contains("replaceState"))
+        XCTAssertTrue(navigation.contains("popstate"))
+        XCTAssertTrue(navigation.contains("navigationChanged"))
+        XCTAssertFalse(navigation.contains("setInterval"))
+    }
+
     func testExploreRulePreservesSearchAndSeparatesDiscoveryContent() throws {
         let source = try instagramRuleSource(id: "instagram.explore.entries")
 
@@ -309,6 +459,19 @@ final class RuleEngineTests: XCTestCase {
             RuleEngine().enabledRules(for: .instagram, settings: .default).first { $0.id == id }
         )
         return try RuleEngine(bundle: .main).source(for: rule)
+    }
+
+    private func shouldShowInstagramMetrics(
+        at url: URL,
+        authenticated: Bool = true,
+        presentation: BrowserPresentationState = .ready
+    ) -> Bool {
+        BrowserMetricsVisibility.shouldShowInstagramHomeMetrics(
+            platform: .instagram,
+            presentation: presentation,
+            currentURL: url,
+            hasAuthenticatedInstagramShell: authenticated
+        )
     }
 
     private func repositorySource(at relativePath: String) throws -> String {

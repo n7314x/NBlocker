@@ -49,9 +49,11 @@ guards independently classify URLs, so route blocking does not depend on DOM sha
 
 JavaScript uses a single scheduled `MutationObserver`; small mutation batches scan
 only affected parent subtrees while larger batches fall back to one document scan.
-Rules run through an idempotent registry. Events crossing the bridge contain only allowlisted event
-names, rule IDs, route categories, and scroll direction—not page content or URLs.
-Missing elements and selector errors are isolated per rule.
+Rules run through an idempotent registry. Events crossing the bridge contain only
+allowlisted event names, rule IDs, route categories, scroll direction, and a
+validated first-party path used to synchronize single-page navigation—not page
+content, query values, or fragments. Missing elements and selector errors are
+isolated per rule.
 
 ## Optional capabilities
 

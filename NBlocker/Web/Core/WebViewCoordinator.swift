@@ -21,9 +21,12 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WK
         )
         switch model.navigationDisposition(for: url, context: context) {
         case .allow:
+            if context.isMainFrame {
+                model.willNavigate(to: url)
+            }
             return .allow
         case let .redirect(url):
-            webView.load(URLRequest(url: url))
+            model.load(url)
             return .cancel
         case let .block(reason):
             model.didBlockNavigation(reason: reason)

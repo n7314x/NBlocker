@@ -76,6 +76,15 @@ final class WebViewModel {
         }
     }
 
+    var shouldShowInstagramHomeMetrics: Bool {
+        BrowserMetricsVisibility.shouldShowInstagramHomeMetrics(
+            platform: platform,
+            presentation: state.presentation,
+            currentURL: state.currentURL,
+            hasAuthenticatedInstagramShell: state.hasAuthenticatedInstagramShell
+        )
+    }
+
     func configure(_ configuration: WKWebViewConfiguration) throws {
         configuration.websiteDataStore = .default()
         configuration.limitsNavigationsToAppBoundDomains = false
@@ -101,7 +110,7 @@ final class WebViewModel {
     }
 
     func loadHome() {
-        webView?.load(URLRequest(url: homeURL))
+        load(homeURL)
     }
 
     func goBack() { webView?.goBack() }
@@ -118,6 +127,7 @@ final class WebViewModel {
     }
 
     func load(_ url: URL) {
+        willNavigate(to: url)
         webView?.load(URLRequest(url: url))
     }
 
@@ -231,9 +241,9 @@ final class WebViewModel {
         }
         switch navigationDisposition(for: url, context: context) {
         case .allow:
-            webView.load(URLRequest(url: url))
+            load(url)
         case let .redirect(secureURL):
-            webView.load(URLRequest(url: secureURL))
+            load(secureURL)
         case let .block(reason):
             didBlockNavigation(reason: reason)
         case .cancelSilently:
@@ -257,6 +267,7 @@ final class WebViewModel {
             presentationTask?.cancel()
         }
         sync(from: webView)
+        state.hasAuthenticatedInstagramShell = false
         state.isLoading = true
         state.estimatedProgress = max(webView.estimatedProgress, 0.05)
         state.metrics = BrowserMetrics()
@@ -304,11 +315,37 @@ final class WebViewModel {
         state.estimatedProgress = webView.estimatedProgress
     }
 
+    func willNavigate(to url: URL) {
+        state.currentURL = url
+        if platform == .instagram {
+            state.hasAuthenticatedInstagramShell = false
+        }
+    }
+
+    func didChangeInstagramNavigation(
+        path: String,
+        hasAuthenticatedInstagramShell: Bool
+    ) {
+        guard platform == .instagram else { return }
+        let baseURL = webView?.url ?? state.currentURL ?? platform.startURL
+        guard let url = URLHelpers.instagramURL(forReportedPath: path, relativeTo: baseURL) else {
+            return
+        }
+        state.currentURL = url
+        state.hasAuthenticatedInstagramShell = hasAuthenticatedInstagramShell
+        browserSessionStore.save(url, for: platform)
+    }
+
     func receiveBridgeMessage(_ body: Any) {
         guard let event = WebMessageHandler.event(from: body) else { return }
         switch event {
         case let .ruleError(identifier):
             AppLogger.logger(.rules).error("Web rule failed: \(identifier, privacy: .public)")
+        case let .navigationChanged(path, hasAuthenticatedInstagramShell):
+            didChangeInstagramNavigation(
+                path: path,
+                hasAuthenticatedInstagramShell: hasAuthenticatedInstagramShell
+            )
         case let .navigationPrevented(route):
             guard
                 (platform == .instagram && route == .reel) ||
@@ -363,7 +400,7 @@ final class WebViewModel {
 
     private func loadInitialPage() {
         let initialURL = browserSessionStore.restoredURL(for: platform, settings: settings) ?? homeURL
-        webView?.load(URLRequest(url: initialURL))
+        load(initialURL)
     }
 
     private func saveRestorableURL(from webView: WKWebView) {

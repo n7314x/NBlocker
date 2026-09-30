@@ -32,11 +32,33 @@ struct PlatformBrowserView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            WebView(model: model)
-                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                if model.shouldShowInstagramHomeMetrics {
+                    BrowserMetricsBar(model: model)
+                        .padding(.horizontal, NBSpacing.standard)
+                        .padding(.vertical, NBSpacing.small)
+                        .transition(
+                            reduceMotion
+                                ? .opacity
+                                : .move(edge: .top).combined(with: .opacity)
+                        )
+                }
+
+                WebView(model: model)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .accessibilityIdentifier("browser.webView")
+            }
+                .ignoresSafeArea(
+                    .container,
+                    edges: model.platform == .instagram ? .bottom : .all
+                )
                 .opacity(isReady ? 1 : 0)
                 .allowsHitTesting(isReady)
-                .accessibilityIdentifier("browser.webView")
+                .animation(
+                    reduceMotion ? nil : NBAnimation.quick,
+                    value: model.shouldShowInstagramHomeMetrics
+                )
 
             if !isReady {
                 BrowserLaunchView(
@@ -119,11 +141,6 @@ struct PlatformBrowserView: View {
                     .zIndex(10)
 
                 VStack(spacing: NBSpacing.small) {
-                    if model.platform == .instagram {
-                        BrowserMetricsBar(model: model)
-                            .padding(.horizontal, NBSpacing.standard)
-                    }
-
                     if model.state.isLoading {
                         BrowserLoadingBar(progress: model.state.estimatedProgress)
                             .padding(.horizontal, NBSpacing.standard)

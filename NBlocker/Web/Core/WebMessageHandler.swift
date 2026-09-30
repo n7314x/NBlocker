@@ -2,6 +2,7 @@ import Foundation
 
 enum WebBridgeEvent: Equatable, Sendable {
     case ruleError(identifier: String)
+    case navigationChanged(path: String, hasAuthenticatedInstagramShell: Bool)
     case navigationPrevented(route: ShortFormRoute)
     case scroll(direction: ScrollDirection)
     case metrics(ads: Int, suggested: Int, blockable: Int)
@@ -60,6 +61,15 @@ enum WebMessageHandler {
                 let route = WebBridgeEvent.ShortFormRoute(rawValue: rawRoute)
             else { return nil }
             return .navigationPrevented(route: route)
+        case "navigationChanged":
+            guard
+                let path = safeInstagramPath(payload["path"]),
+                let hasAuthenticatedInstagramShell = payload["authenticated"] as? Bool
+            else { return nil }
+            return .navigationChanged(
+                path: path,
+                hasAuthenticatedInstagramShell: hasAuthenticatedInstagramShell
+            )
         case "scroll":
             guard
                 let rawDirection = payload["direction"] as? String,
@@ -91,5 +101,17 @@ enum WebMessageHandler {
         let count = number.intValue
         guard count >= 0 else { return nil }
         return min(count, 9_999)
+    }
+
+    private static func safeInstagramPath(_ value: Any?) -> String? {
+        guard
+            let path = value as? String,
+            path.utf8.count <= 2_048,
+            path.hasPrefix("/"),
+            !path.hasPrefix("//"),
+            !path.contains("?"),
+            !path.contains("#")
+        else { return nil }
+        return path
     }
 }

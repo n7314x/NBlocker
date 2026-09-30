@@ -71,6 +71,33 @@ enum URLHelpers {
         }
     }
 
+    static func isInstagramHomeFeedURL(_ url: URL) -> Bool {
+        guard
+            url.scheme?.lowercased() == "https",
+            let host = url.host?.lowercased(),
+            ["instagram.com", "www.instagram.com", "m.instagram.com"].contains(host),
+            url.user == nil,
+            url.password == nil,
+            url.port == nil || url.port == 443
+        else { return false }
+
+        return url.pathComponents.filter { $0 != "/" }.isEmpty
+    }
+
+    static func instagramURL(forReportedPath path: String, relativeTo baseURL: URL) -> URL? {
+        guard
+            path.hasPrefix("/"),
+            !path.hasPrefix("//"),
+            !path.contains("?"),
+            !path.contains("#"),
+            isFirstPartyWebURL(baseURL, for: .instagram),
+            let url = URL(string: path, relativeTo: baseURL)?.absoluteURL,
+            isFirstPartyWebURL(url, for: .instagram)
+        else { return nil }
+
+        return url
+    }
+
     static func isFirstPartyWebURL(_ url: URL, for platform: Platform) -> Bool {
         guard
             let scheme = url.scheme?.lowercased(),

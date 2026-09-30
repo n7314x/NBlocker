@@ -18,3 +18,8 @@ external-open action rather than inheriting the authenticated platform context.
 Harmless subframe/internal navigation is never promoted to a user-facing warning.
 Known Instagram app-scheme profile links are converted to first-party web URLs when
 safe; other app-launch attempts are ignored instead of opening the installed app.
+
+The native metrics bar is a separate layout row above the webpage only on the
+authenticated `/` Home feed. It is absent from Messages, Explore/Search, Reels,
+profiles, posts, Stories, account/settings, challenge/checkpoint, and login routes.
+Its visibility does not change filtering or the active usage session.
